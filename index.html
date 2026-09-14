@@ -1,0 +1,1750 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<title>Apontamento de Frota — Manutenção Automotiva Clealco</title>
+<style>
+  :root{
+    --bg:#F7F8FA;
+    --surface:#FFFFFF;
+    --surface-2:#F1F3F6;
+    --surface-3:#E6E9ED;
+    --border:#E2E5EA;
+    --border-strong:#D3D7DE;
+    --text:#3C4048;
+    --text-muted:#8A909B;
+
+    --green:#58CC02; --green-shadow:#46A302; --green-soft:#E6F7D9;
+    --blue:#1CB0F6; --blue-shadow:#1899D6; --blue-soft:#E1F5FE;
+    --yellow:#FFC800; --yellow-shadow:#E6A800; --yellow-soft:#FFF6DA;
+    --red:#FF4B4B; --red-shadow:#E63E3E; --red-soft:#FFE7E7;
+    --purple:#CE82FF; --purple-shadow:#B15CE6; --purple-soft:#F4E7FF;
+    --gray-soft:#EEF0F3;
+
+    --accent:var(--green); --accent-shadow:var(--green-shadow); --accent-soft:var(--green-soft); --accent-contrast:#FFFFFF;
+    --shadow: rgba(60,64,72,0.08);
+    --font-display:'Fredoka','Baloo 2',sans-serif;
+    --font-body:'Nunito','Segoe UI',sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#131F24; --surface:#1B2A31; --surface-2:#22333B; --surface-3:#2B3E47;
+      --border:#31454E; --border-strong:#3D545F; --text:#EAF2F5; --text-muted:#8FA3AC;
+      --green:#58CC02; --green-shadow:#3E8E02; --green-soft:#1F3311;
+      --blue:#3BC1FF; --blue-shadow:#1C93C9; --blue-soft:#0F2C38;
+      --yellow:#FFC800; --yellow-shadow:#C99A00; --yellow-soft:#3A2E0C;
+      --red:#FF5B5B; --red-shadow:#C93F3F; --red-soft:#3A1414;
+      --purple:#D79BFF; --purple-shadow:#9A5FCB; --purple-soft:#2A1B38;
+      --gray-soft:#2B3E47;
+      --accent:var(--green); --accent-shadow:var(--green-shadow); --accent-soft:var(--green-soft); --accent-contrast:#0A1410;
+      --shadow: rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#131F24; --surface:#1B2A31; --surface-2:#22333B; --surface-3:#2B3E47;
+    --border:#31454E; --border-strong:#3D545F; --text:#EAF2F5; --text-muted:#8FA3AC;
+    --green:#58CC02; --green-shadow:#3E8E02; --green-soft:#1F3311;
+    --blue:#3BC1FF; --blue-shadow:#1C93C9; --blue-soft:#0F2C38;
+    --yellow:#FFC800; --yellow-shadow:#C99A00; --yellow-soft:#3A2E0C;
+    --red:#FF5B5B; --red-shadow:#C93F3F; --red-soft:#3A1414;
+    --purple:#D79BFF; --purple-shadow:#9A5FCB; --purple-soft:#2A1B38;
+    --gray-soft:#2B3E47;
+    --accent:var(--green); --accent-shadow:var(--green-shadow); --accent-soft:var(--green-soft); --accent-contrast:#0A1410;
+    --shadow: rgba(0,0,0,0.5);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--font-body); font-size:15px; line-height:1.45;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #app{ min-height:100vh; }
+  .app-shell{ display:flex; min-height:100vh; }
+
+  /* ---------- Side nav (desktop/tablet) ---------- */
+  .sidenav{
+    display:none; flex-direction:column; width:236px; flex-shrink:0;
+    border-right:2px solid var(--border); padding:20px 14px; gap:4px;
+    position:sticky; top:0; height:100vh; background:var(--surface);
+  }
+  @media (min-width:860px){ .sidenav{ display:flex; } }
+  .sidenav-brand{ display:flex; align-items:center; gap:10px; padding:6px 8px 22px; }
+  .sidenav-mark{
+    width:40px; height:40px; border-radius:12px; background:#fff; padding:5px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    box-shadow:0 3px 0 var(--border-strong); border:2px solid var(--border);
+  }
+  .sidenav-mark img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .sidenav-title{ font-family:var(--font-display); font-weight:700; font-size:17px; line-height:1.1; }
+  .sidenav-sub{ font-size:10.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+  .nav-item{
+    display:flex; align-items:center; gap:12px; padding:12px 12px; border-radius:14px; border:2px solid transparent;
+    font-family:var(--font-display); font-weight:600; font-size:14.5px; color:var(--text-muted);
+    background:none; text-align:left; width:100%;
+  }
+  .nav-item .nav-ico{
+    width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    font-size:16px; background:var(--surface-2); flex-shrink:0;
+  }
+  .nav-item:active{ background:var(--surface-2); }
+  .nav-item.active{ color:var(--green); background:var(--green-soft); border-color:var(--green); }
+  .nav-item.active .nav-ico{ background:var(--green); color:#fff; }
+  .sidenav-footer{ margin-top:auto; padding-top:10px; border-top:2px solid var(--border); }
+
+  /* ---------- Bottom nav (mobile) ---------- */
+  .bottomnav{
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:25;
+    background:var(--surface); border-top:2px solid var(--border);
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+  }
+  @media (min-width:860px){ .bottomnav{ display:none; } }
+  .bottomnav .nav-item{ flex-direction:column; gap:3px; padding:7px 4px; font-size:11px; border-radius:12px; align-items:center; }
+  .bottomnav .nav-item .nav-ico{ width:30px; height:30px; }
+
+  .content-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+
+  .shell{ max-width:680px; margin:0 auto; width:100%; padding-inline:16px; }
+
+  .topbar{
+    position:sticky; top:0; z-index:20; background:var(--surface);
+    border-bottom:2px solid var(--border);
+  }
+  .topbar-inner{
+    max-width:680px; margin:0 auto; padding:14px 16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+  .brand-mark{
+    width:38px; height:38px; border-radius:11px; background:#fff; padding:5px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; box-shadow:0 3px 0 var(--border-strong); border:2px solid var(--border);
+  }
+  .brand-mark img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .brand-text{ min-width:0; }
+  .brand-title{
+    font-family:var(--font-display); font-weight:700; font-size:19px; line-height:1;
+  }
+  .brand-sub{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-top:3px; }
+  .theme-btn{
+    width:38px; height:38px; border-radius:12px; background:var(--surface-2); border:2px solid var(--border);
+    font-size:17px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    box-shadow:0 3px 0 var(--border-strong);
+  }
+  .theme-btn:active{ transform:translateY(3px); box-shadow:none; }
+  .role-pill{
+    font-family:var(--font-display); font-weight:600; font-size:12.5px; letter-spacing:.02em;
+    padding:8px 13px; border-radius:100px; background:var(--surface-2); color:var(--text-muted);
+    border:2px solid var(--border); white-space:nowrap;
+  }
+  .role-pill:active{ background:var(--surface-3); }
+  @media (min-width:860px){ .role-pill{ display:none; } }
+
+  main{ flex:1; padding-block:18px 96px; }
+  @media (min-width:860px){ main{ padding-block:26px 40px; } }
+
+  h1,h2,h3{ font-family:var(--font-display); font-weight:700; letter-spacing:.1px; text-wrap:balance; margin:0; }
+  h1{ font-size:26px; }
+  h2{ font-size:19px; }
+  h3{ font-size:16px; }
+  p{ margin:0; }
+  .muted{ color:var(--text-muted); }
+  .eyebrow{
+    font-family:var(--font-display); font-size:12.5px; font-weight:600; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--text-muted);
+  }
+  .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+
+  .card{
+    background:var(--surface); border:2px solid var(--border); border-radius:18px;
+    padding:16px; box-shadow:0 2px 0 var(--shadow);
+  }
+  .stack{ display:flex; flex-direction:column; gap:14px; }
+  .row{ display:flex; gap:10px; align-items:center; }
+  .row-between{ display:flex; gap:10px; align-items:center; justify-content:space-between; }
+
+  .banner{
+    display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:14px;
+    font-size:13.5px; font-weight:700; border:2px solid;
+  }
+  .banner-warn{ background:var(--yellow-soft); border-color:var(--yellow); color:#8A6800; }
+  .banner-danger{ background:var(--red-soft); border-color:var(--red); color:var(--red); }
+  .banner-ok{ background:var(--green-soft); border-color:var(--green); color:var(--green-shadow); }
+  :root[data-theme="dark"] .banner-warn{ color:var(--yellow); }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .banner-warn{ color:var(--yellow); } }
+
+  label.field-label{
+    display:block; font-family:var(--font-display); font-weight:600; font-size:13.5px;
+    letter-spacing:.02em; margin-bottom:6px; color:var(--text);
+  }
+  input[type="text"], input[type="number"], input[type="date"], select, textarea{
+    width:100%; font-family:var(--font-body); font-weight:600; font-size:15px; color:var(--text);
+    background:var(--surface-2); border:2px solid var(--border); border-radius:12px;
+    padding:11px 13px; outline:none;
+  }
+  input:focus, select:focus, textarea:focus{ border-color:var(--blue); background:var(--surface); }
+  textarea{ resize:vertical; min-height:64px; font-family:var(--font-body); font-weight:500; }
+  .field{ display:flex; flex-direction:column; }
+  .field-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:420px){ .field-grid{ grid-template-columns:1fr; } }
+
+  button{ font-family:var(--font-body); cursor:pointer; }
+  .btn{
+    appearance:none; border:none; border-radius:14px;
+    padding:13px 18px; font-size:15px; font-weight:700; font-family:var(--font-display);
+    letter-spacing:.02em; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .04s ease;
+  }
+  .btn-primary{ background:var(--green); color:#fff; box-shadow:0 4px 0 var(--green-shadow); }
+  .btn-primary:active{ transform:translateY(4px); box-shadow:0 0 0 var(--green-shadow); }
+  .btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
+  .btn-secondary{ background:var(--surface-2); color:var(--text); box-shadow:0 4px 0 var(--border-strong); }
+  .btn-secondary:active{ transform:translateY(4px); box-shadow:0 0 0 var(--border-strong); }
+  .btn-blue{ background:var(--blue); color:#fff; box-shadow:0 4px 0 var(--blue-shadow); }
+  .btn-blue:active{ transform:translateY(4px); box-shadow:0 0 0 var(--blue-shadow); }
+  .btn-ghost{ background:transparent; color:var(--blue); padding:8px 6px; box-shadow:none; }
+  .btn-danger-ghost{ background:transparent; color:var(--red); padding:8px 6px; box-shadow:none; }
+  .btn-block{ width:100%; }
+  .btn-sm{ padding:9px 13px; font-size:13.5px; border-radius:11px; }
+
+  .role-choice{ display:flex; flex-direction:column; gap:12px; margin-top:18px; }
+  .role-card{
+    background:var(--surface); border:2px solid var(--border); border-radius:18px;
+    padding:18px; text-align:left; display:flex; gap:14px; align-items:center;
+    box-shadow:0 3px 0 var(--border-strong);
+  }
+  .role-card:active{ transform:translateY(3px); box-shadow:none; }
+  .role-icon{
+    width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;
+    font-size:22px; flex-shrink:0; color:#fff;
+  }
+  .role-icon.green{ background:var(--green); }
+  .role-icon.blue{ background:var(--blue); }
+
+  .steps{ display:flex; gap:6px; margin-bottom:16px; }
+  .step-dot{ flex:1; height:8px; border-radius:100px; background:var(--surface-3); }
+  .step-dot.done{ background:var(--green); }
+  .step-dot.current{ background:var(--blue); }
+  .step-label{ font-family:var(--font-display); font-size:12.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
+
+  .photo-box{
+    border:2.5px dashed var(--border-strong); border-radius:16px; background:var(--surface-2);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+    padding:20px; text-align:center; min-height:120px; position:relative; overflow:hidden;
+  }
+  .photo-box img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .photo-box .photo-caption{ position:relative; z-index:1; font-size:13px; font-weight:700; color:var(--text-muted); }
+  .photo-box.filled .photo-caption{ display:none; }
+  .photo-retake{
+    position:absolute; right:8px; top:8px; z-index:2; background:rgba(0,0,0,.6); color:#fff;
+    border:none; border-radius:10px; padding:6px 11px; font-size:12px; font-family:var(--font-display); font-weight:700;
+  }
+  .photo-box.item-photo.missing{ border-color:var(--red); background:var(--red-soft); }
+  .photo-box.item-photo .photo-caption{ color:var(--red); }
+  .photo-box.item-photo.filled .photo-caption{ color:var(--text-muted); }
+
+  .segmented{ display:flex; border:2px solid var(--border); border-radius:12px; overflow:hidden; }
+  .segmented button{
+    flex:1; border:none; background:var(--surface-2); color:var(--text-muted); padding:10px 4px;
+    font-family:var(--font-display); font-weight:700; font-size:13px; letter-spacing:.02em;
+    border-right:2px solid var(--border);
+  }
+  .segmented button:last-child{ border-right:none; }
+  .segmented button.active[data-val="ok"]{ background:var(--green); color:#fff; }
+  .segmented button.active[data-val="problema"]{ background:var(--red); color:#fff; }
+  .segmented button.active[data-val="na"]{ background:var(--surface-3); color:var(--text); }
+
+  .checklist-section{ margin-bottom:4px; }
+  .checklist-section-title{
+    font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:.02em;
+    padding:9px 0 7px; color:var(--blue); border-bottom:2px solid var(--border); margin-bottom:10px;
+  }
+  .checklist-item{ padding:10px 0; border-bottom:1px solid var(--border); }
+  .checklist-item:last-child{ border-bottom:none; }
+  .checklist-item-head{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; margin-bottom:9px; }
+  .checklist-item-text{ font-size:14px; font-weight:600; }
+  .checklist-item-num{ font-family:var(--font-mono); color:var(--text-muted); font-size:12.5px; margin-right:6px; font-weight:400;}
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:100px;
+    font-family:var(--font-display); font-weight:700; font-size:12px; letter-spacing:.03em; text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .pill-yellow{ background:var(--yellow-soft); color:#8A6800; }
+  .pill-blue{ background:var(--blue-soft); color:var(--blue-shadow); }
+  .pill-green{ background:var(--green-soft); color:var(--green-shadow); }
+  .pill-gray{ background:var(--gray-soft); color:var(--text-muted); }
+  .pill-red{ background:var(--red-soft); color:var(--red); }
+  @media (prefers-color-scheme:dark){ .pill-yellow{ color:var(--yellow); } }
+  :root[data-theme="dark"] .pill-yellow{ color:var(--yellow); }
+  :root[data-theme="dark"] .pill-blue{ color:var(--blue); }
+  :root[data-theme="dark"] .pill-green{ color:var(--green); }
+
+  .part-row{ display:flex; gap:8px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--border); }
+  .part-row:last-child{ border-bottom:none; }
+  .part-row .field{ flex:1; }
+  .part-remove{ background:none; border:none; color:var(--red); font-size:22px; line-height:1; padding:8px 4px; margin-top:4px; font-weight:700; }
+
+  .os-card{
+    background:var(--surface); border:2px solid var(--border); border-radius:16px; padding:14px;
+    display:flex; flex-direction:column; gap:8px; text-align:left; width:100%;
+    box-shadow:0 2px 0 var(--shadow);
+  }
+  .os-card:active{ transform:translateY(1px); }
+  .os-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .os-code{ font-family:var(--font-mono); font-size:12.5px; color:var(--text-muted); }
+  .os-frota{ font-family:var(--font-display); font-weight:700; font-size:17px; }
+  .os-meta{ font-size:12.5px; color:var(--text-muted); display:flex; gap:10px; flex-wrap:wrap; font-weight:600; }
+
+  .tabs{ display:flex; gap:6px; margin-bottom:14px; background:var(--surface-2); padding:5px; border-radius:14px; }
+  .tab-btn{
+    flex:1; border:none; background:transparent; color:var(--text-muted); padding:10px 6px; border-radius:10px;
+    font-family:var(--font-display); font-weight:700; font-size:13.5px; letter-spacing:.02em;
+  }
+  .tab-btn.active{ background:var(--surface); color:var(--green); box-shadow:0 2px 0 var(--shadow); }
+
+  .action-bar{
+    position:fixed; left:0; right:0; bottom:0; background:var(--surface); border-top:2px solid var(--border);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom)); z-index:30;
+  }
+  @media (min-width:860px){ .action-bar{ left:236px; } }
+  .action-bar-inner{ max-width:680px; margin:0 auto; display:flex; gap:10px; }
+  .action-bar-inner .btn{ flex:1; }
+
+  .empty-state{ text-align:center; padding:34px 16px; color:var(--text-muted); font-weight:600; }
+  .empty-state .icon{ font-size:32px; margin-bottom:8px; }
+
+  canvas.sig-pad{
+    width:100%; height:150px; border-radius:14px; border:2.5px dashed var(--border-strong);
+    background:var(--surface-2); touch-action:none; display:block;
+  }
+
+  .divider{ height:1px; background:var(--border); border:none; margin:2px 0; }
+  .back-link{ display:inline-flex; align-items:center; gap:5px; color:var(--text-muted); font-size:13.5px; font-weight:700; background:none; border:none; padding:4px 0; margin-bottom:10px; font-family:var(--font-body); }
+  .back-link:active{ color:var(--text); }
+
+  .checkbox-row{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--border); }
+  .checkbox-row:last-child{ border-bottom:none; }
+  .checkbox-row input[type="checkbox"]{ width:20px; height:20px; margin-top:2px; accent-color:var(--green); flex-shrink:0; }
+  .checkbox-row-text{ flex:1; font-weight:600; }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .kpi{ background:var(--surface); border:2px solid var(--border); border-radius:15px; padding:12px 10px; text-align:center; }
+  .kpi-num{ font-family:var(--font-display); font-weight:700; font-size:23px; }
+  .kpi-label{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:1px; font-weight:700; }
+  .kpi.green .kpi-num{ color:var(--green); }
+  .kpi.blue .kpi-num{ color:var(--blue); }
+  .kpi.yellow .kpi-num{ color:#8A6800; }
+  :root[data-theme="dark"] .kpi.yellow .kpi-num{ color:var(--yellow); }
+
+  .filter-bar{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .filter-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  @media (max-width:420px){ .filter-row{ grid-template-columns:1fr 1fr; } }
+
+  a{ color:var(--blue); }
+  ::selection{ background:var(--green-soft); }
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var NOTIFY_EMAIL = "raulgribeiro@gmail.com";
+
+  /* Configuração do projeto Firebase (apontamento-frota-clealco).
+     Usado apenas quando o app roda fora do ambiente do Claude
+     (ex.: hospedado no GitHub Pages). Dentro do Claude, continua
+     usando o banco de dados do Artifact normalmente. */
+  var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDgRTaMTutvFQrz2rBMQKBheB7wJtd0xcY",
+    authDomain: "apontamento-frota-clealco.firebaseapp.com",
+    projectId: "apontamento-frota-clealco",
+    storageBucket: "apontamento-frota-clealco.firebasestorage.app",
+    messagingSenderId: "959994123404",
+    appId: "1:959994123404:web:16098fc6900701798a17a9"
+  };
+
+  var LOGO_ICON = "data:image/png;base64,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";
+  var LOGO_FULL = "data:image/png;base64,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";
+
+  /* ---------------------------------------------------------------
+   * Checklist templates
+   * ------------------------------------------------------------- */
+  var CHECKLIST_TEMPLATES = {
+    COLHEDORA: {
+      label: "Colhedora",
+      sections: [
+        { title: "1. Sistema do Picador", items: [
+          { id:"1.1", text:"Verificar vazamento na caixa do picador e junta da tampa" },
+          { id:"1.2", text:"Verificar nível de óleo da caixa do picador" },
+          { id:"1.3", text:"Verificar folga no volante do picador" }
+        ]},
+        { title: "2. Sistema do Elevador", items: [
+          { id:"2.1", text:"Verificar tensionamento da esteira" },
+          { id:"2.2", text:"Verificar regulagem e desgaste das engrenagens" },
+          { id:"2.3", text:"Verificar mangueira e conexões hidráulicas" },
+          { id:"2.4", text:"Verificar cabos e roldana do giro do elevador" }
+        ]},
+        { title: "3. Sistema de Divisor de Linha", items: [
+          { id:"3.1", text:"Verificar sapatas L.D. e L.E. / revestimento de facões" },
+          { id:"3.2", text:"Verificar pistões e mangueiras hidráulicas (manter padrão e posicionamento correto)" },
+          { id:"3.3", text:"Verificar folga no rolamento dos pirulitos e nos facões lateral" }
+        ]},
+        { title: "4. Mesa do Giro do Elevador", items: [
+          { id:"4.1", text:"Verificar trinca na mesa" },
+          { id:"4.2", text:"Verificar cilindro hidráulico do giro" },
+          { id:"4.3", text:"Verificar fixação dos parafusos dos pinos da mesa" },
+          { id:"4.4", text:"Verificar aperto dos parafusos do tijolinho (verificar torque)" }
+        ]},
+        { title: "5. Sistema de Rodante", items: [
+          { id:"5.1", text:"Verificar tensão da esteira L.D. e L.E. (utilizar gabarito padrão do rodante)" },
+          { id:"5.2", text:"Retirar ar dos cubos redutores L.D. e L.E." },
+          { id:"5.3", text:"Verificar mangueiras do motor de roda e vazamento do motor de roda e cubo" },
+          { id:"5.4", text:"Verificar condição da roda motriz L.D. e L.E." },
+          { id:"5.5", text:"Verificar cilindro e mangueira da suspensão L.D. e L.E." },
+          { id:"5.6", text:"Verificar skates, roletes e parafusos dos roletes" }
+        ]},
+        { title: "6. Trem de Rolo", items: [
+          { id:"6.1", text:"Verificar condições dos mancais e rolamento L.D. e L.E." },
+          { id:"6.2", text:"Verificar batentes de borracha e arruelas dos rolos" },
+          { id:"6.3", text:"Verificar mangueiras e conexões" }
+        ]},
+        { title: "7. Sistema de Corte de Base", items: [
+          { id:"7.1", text:"Verificar nível da caixa e mangueiras hidráulicas" },
+          { id:"7.2", text:"Verificar aletas da canela L.D. e L.E." },
+          { id:"7.3", text:"Verificar discos L.D. e L.E. e chapa guia" }
+        ]},
+        { title: "8. Extrator Primário e Secundário", items: [
+          { id:"8.1", text:"Verificar capuz e pás primário e secundário" },
+          { id:"8.2", text:"Verificar corrente de giro do capô" },
+          { id:"8.3", text:"Verificar estrutura" },
+          { id:"8.4", text:"Verificar mangueiras e conexões hidráulicas" }
+        ]}
+      ]
+    }
+  };
+  var GENERIC_SECTIONS = [
+    { title:"1. Motor e Fluidos", items:[
+      { id:"g1.1", text:"Verificar nível de óleo do motor" },
+      { id:"g1.2", text:"Verificar nível de fluido de arrefecimento" },
+      { id:"g1.3", text:"Verificar vazamentos no motor" }
+    ]},
+    { title:"2. Freios e Rodado", items:[
+      { id:"g2.1", text:"Verificar sistema de freios" },
+      { id:"g2.2", text:"Verificar pneus / rodado e calibragem" }
+    ]},
+    { title:"3. Elétrica e Hidráulica", items:[
+      { id:"g3.1", text:"Verificar sistema elétrico e luzes" },
+      { id:"g3.2", text:"Verificar mangueiras e vazamentos hidráulicos" }
+    ]}
+  ];
+  ["TRATOR","CAMINHAO","PULVERIZADOR"].forEach(function(k){
+    var labels = { TRATOR:"Trator", CAMINHAO:"Caminhão", PULVERIZADOR:"Pulverizador" };
+    CHECKLIST_TEMPLATES[k] = { label: labels[k], sections: GENERIC_SECTIONS, generic:true };
+  });
+  var FROTA_TIPOS = ["COLHEDORA","TRATOR","CAMINHAO","PULVERIZADOR"];
+
+  var STATUS_LABEL = {
+    pecas_pendentes: "Aguardando separação",
+    aguardando_assinatura: "Aguardando assinatura",
+    aguardando_aplicacao: "Aguardando aplicação",
+    concluida: "Concluída"
+  };
+  var STATUS_PILL_CLASS = {
+    pecas_pendentes: "pill-yellow",
+    aguardando_assinatura: "pill-blue",
+    aguardando_aplicacao: "pill-blue",
+    concluida: "pill-green"
+  };
+
+  /* ---------------------------------------------------------------
+   * Utilities
+   * ------------------------------------------------------------- */
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  function genOsCode(){
+    var d = new Date();
+    var ymd = String(d.getFullYear()).slice(2) + pad(d.getMonth()+1) + pad(d.getDate());
+    return "OS-" + ymd + "-" + Math.random().toString(36).slice(2,6).toUpperCase();
+  }
+  function pad(n){ return n<10 ? "0"+n : ""+n; }
+  function todayISO(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function fmtDate(iso){
+    if(!iso) return "";
+    var p = iso.split("-"); if(p.length!==3) return iso;
+    return p[2]+"/"+p[1]+"/"+p[0];
+  }
+  function fmtDateTime(iso){
+    if(!iso) return "";
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return iso;
+    return pad(d.getDate())+"/"+pad(d.getMonth()+1)+" "+pad(d.getHours())+":"+pad(d.getMinutes());
+  }
+  function escapeHtml(s){
+    return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];
+    });
+  }
+  function lsGet(key, fallback){
+    try{ var v = localStorage.getItem(key); return v==null ? fallback : JSON.parse(v); }
+    catch(e){ return fallback; }
+  }
+  function lsSet(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+  }
+  function blobFromCanvas(canvas){
+    return new Promise(function(resolve){ canvas.toBlob(function(b){ resolve(b); }, "image/png"); });
+  }
+  var THEME_ORDER = ["system","light","dark"];
+  var THEME_META = {
+    system: { icon:"🖥️", label:"Automático" },
+    light: { icon:"☀️", label:"Claro" },
+    dark: { icon:"🌙", label:"Escuro" }
+  };
+  function applyTheme(theme){
+    var root = document.documentElement;
+    if(theme==="light"){ root.setAttribute("data-theme","light"); }
+    else if(theme==="dark"){ root.setAttribute("data-theme","dark"); }
+    else { root.removeAttribute("data-theme"); }
+  }
+  function cycleTheme(){
+    var idx = THEME_ORDER.indexOf(state.theme);
+    state.theme = THEME_ORDER[(idx+1) % THEME_ORDER.length];
+    lsSet("af_theme", state.theme);
+    applyTheme(state.theme);
+    render();
+  }
+  function buildOsEmailMailto(os){
+    var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {label:os.frotaTipo};
+    var subject = "Novo apontamento " + os.osCode + " — " + tmpl.label + " " + os.frotaNumero;
+    var lines = [];
+    lines.push("Novo apontamento de manutenção enviado pelo mecânico.");
+    lines.push("");
+    lines.push("OS: " + os.osCode);
+    lines.push("Frota: " + tmpl.label + " " + os.frotaNumero);
+    lines.push("Mecânico: " + os.mecanicoNome + " (matrícula " + os.mecanicoMatricula + ")");
+    lines.push("Horímetro: " + (os.horimetro || "—"));
+    lines.push("Data do serviço: " + fmtDate(os.dataServico));
+    lines.push("");
+    var problemas = Object.keys(os.checklist||{}).filter(function(k){ return os.checklist[k].status==="problema"; });
+    lines.push("Itens com problema no checklist: " + (problemas.length || "nenhum"));
+    problemas.forEach(function(k){
+      var c = os.checklist[k];
+      var item = null;
+      (tmpl.sections||[]).forEach(function(s){ s.items.forEach(function(it){ if(it.id===k) item=it; }); });
+      lines.push("  - " + k + " " + (item?item.text:"") + (c.obs?(" — " + c.obs):""));
+    });
+    lines.push("");
+    if((os.pecas||[]).length){
+      lines.push("Peças solicitadas:");
+      os.pecas.forEach(function(p){ lines.push("  - " + p.nome + " (x" + (p.qtd||"1") + ")" + (p.obs?(" — "+p.obs):"")); });
+    } else {
+      lines.push("Nenhuma peça solicitada — OS já concluída.");
+    }
+    if(os.obsGeral){ lines.push(""); lines.push("Observações gerais: " + os.obsGeral); }
+    lines.push("");
+    lines.push("(Mensagem de teste gerada pelo Apontamento de Frota — Clealco)");
+    var body = lines.join("\n");
+    return {
+      to: NOTIFY_EMAIL,
+      subject: subject,
+      body: body,
+      mailto: "mailto:" + NOTIFY_EMAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body)
+    };
+  }
+  function openMailto(url){
+    // Opens in a new browsing context instead of navigating this page —
+    // if no mail client is registered, only the new (blank) tab is affected.
+    try{ window.open(url, "_blank"); }catch(e){}
+  }
+  function copyToClipboard(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(text).then(function(){ return true; }).catch(function(){ return copyFallback(text); });
+    }
+    return Promise.resolve(copyFallback(text));
+  }
+  function copyFallback(text){
+    try{
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    }catch(e){ return false; }
+  }
+  function assetUrl(id){
+    if(!id) return null;
+    var s = String(id);
+    if(s.indexOf("data:")===0) return s;
+    if(s.indexOf("http")===0) return s;
+    return "/_blob/" + id;
+  }
+  function blobToDataUrl(blob){
+    return new Promise(function(resolve){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result); };
+      reader.onerror = function(){ resolve(null); };
+      reader.readAsDataURL(blob);
+    });
+  }
+  function norm(s){ return String(s==null?"":s).toLowerCase(); }
+
+  /* ---------------------------------------------------------------
+   * State
+   * ------------------------------------------------------------- */
+  var db = null, assetsApi = null;
+
+  var state = {
+    route: "gate",
+    theme: lsGet("af_theme", "system"),
+    role: lsGet("af_role", null),
+    mecNome: lsGet("af_mecNome", ""),
+    mecMatricula: lsGet("af_mecMatricula", ""),
+    liderNome: lsGet("af_liderNome", ""),
+    liderTab: "fila",
+    osAll: [],
+    localOS: [],
+    currentOsId: null,
+    lastSubmittedOs: null,
+    consultaOsId: null,
+    consultaFilters: { q:"", tipo:"todos", status:"todos" },
+    busy: false,
+    error: null,
+    wizard: null,
+    sigDrawing: false,
+    sigHasStroke: false
+  };
+
+  function freshWizard(){
+    return {
+      step: 1, frotaTipo: "COLHEDORA", frotaNumero: "",
+      equipamentoAssetId: null, crachaAssetId: null,
+      horimetro: "", dataServico: todayISO(),
+      checklist: {}, obsGeral: "",
+      pecas: [{ id: uid(), nome:"", qtd:"1", obs:"" }]
+    };
+  }
+
+  function osList(){ return db ? state.osAll : state.localOS; }
+  function findOs(id){ return osList().find(function(o){ return o.id===id; }); }
+
+  var ACTION_BAR_ROUTES = { "mec-wizard":1, "mec-signature":1, "mec-apply":1 };
+  function routeHasBottomActionBar(){
+    if(ACTION_BAR_ROUTES[state.route]) return true;
+    if(state.route==="lider-detail"){
+      var os = findOs(state.currentOsId);
+      return !!(os && os.status==="pecas_pendentes");
+    }
+    return false;
+  }
+
+  /* ---------------------------------------------------------------
+   * Data layer
+   * ------------------------------------------------------------- */
+  function subscribe(){
+    if(!db) { render(); return; }
+    try{
+      db.collection("os").orderBy("createdAt","desc").limit(300).onSnapshot(
+        function(snap){
+          state.osAll = snap.docs.map(function(d){ var b=d.data()||{}; b.id=d.id; return b; });
+          render();
+        },
+        function(err){
+          state.error = "Conexão com os dados instável (" + err.code + "). Mantendo a última versão vista.";
+          render();
+        }
+      );
+    }catch(e){ render(); }
+  }
+
+  function createOs(data){
+    var id = "os_" + uid();
+    data.id = id;
+    data.createdAt = new Date().toISOString();
+    data.updatedAt = data.createdAt;
+    if(db){ return db.collection("os").doc(id).set(data); }
+    state.localOS.unshift(Object.assign({}, data));
+    return Promise.resolve();
+  }
+  function updateOs(id, patch){
+    patch.updatedAt = new Date().toISOString();
+    if(db){ return db.doc("os/"+id).update(patch); }
+    var o = findOs(id);
+    if(o) Object.assign(o, patch);
+    return Promise.resolve();
+  }
+  function uploadImage(blob){
+    if(!blob) return Promise.resolve(null);
+    if(!assetsApi) return blobToDataUrl(blob);
+    return assetsApi.upload(blob).then(function(r){ return r.id; }).catch(function(){ return blobToDataUrl(blob); });
+  }
+
+  /* ---------------------------------------------------------------
+   * Render shell
+   * ------------------------------------------------------------- */
+  var app = document.getElementById("app");
+
+  function navItemsFor(role){
+    if(role==="lider"){
+      return [
+        { route:"lider-home", icon:"📋", label:"Fila" },
+        { route:"consulta", icon:"📜", label:"Serviços" }
+      ];
+    }
+    return [
+      { route:"mec-home", icon:"🏠", label:"Início" },
+      { action:"new-apontamento", icon:"➕", label:"Novo" },
+      { route:"consulta", icon:"📜", label:"Serviços" }
+    ];
+  }
+
+  function isNavActive(item){
+    if(item.route==="mec-home") return state.route==="mec-home";
+    if(item.route==="lider-home") return state.route==="lider-home";
+    if(item.route==="consulta") return state.route==="consulta" || state.route==="consulta-detail";
+    return false;
+  }
+
+  function renderNavItem(item, isBottom){
+    var active = isNavActive(item);
+    var attrs = item.route ? ('data-action="nav-goto" data-route="'+item.route+'"') : ('data-action="'+item.action+'"');
+    return (
+      '<button class="nav-item '+(active?"active":"")+'" '+attrs+'>'+
+        '<span class="nav-ico">'+item.icon+'</span><span>'+item.label+'</span>'+
+      '</button>'
+    );
+  }
+
+  function renderSidenav(){
+    if(!state.role) return "";
+    var items = navItemsFor(state.role);
+    return (
+      '<nav class="sidenav">'+
+        '<div class="sidenav-brand"><div class="sidenav-mark"><img src="'+LOGO_ICON+'" alt="Clealco"></div><div>'+
+          '<div class="sidenav-title">Apontamento de Frota</div><div class="sidenav-sub">Manutenção · Clealco</div>'+
+        '</div></div>'+
+        items.map(function(it){ return renderNavItem(it, false); }).join("")+
+        '<div class="sidenav-footer">'+
+          '<div style="padding:8px 12px 4px;"><p class="eyebrow" style="margin-bottom:2px;">'+(state.role==="lider"?"Líder":"Mecânico")+'</p>'+
+          '<p style="font-weight:700; font-size:14px;">'+escapeHtml(state.role==="lider" ? (state.liderNome||"—") : (state.mecNome||"—"))+'</p></div>'+
+          '<button class="nav-item" data-action="cycle-theme"><span class="nav-ico">'+THEME_META[state.theme].icon+'</span><span>Tema: '+THEME_META[state.theme].label+'</span></button>'+
+          '<button class="nav-item" data-action="switch-role"><span class="nav-ico">🔁</span><span>Trocar perfil</span></button>'+
+        '</div>'+
+      '</nav>'
+    );
+  }
+
+  function renderBottomnav(){
+    if(!state.role || routeHasBottomActionBar()) return "";
+    var items = navItemsFor(state.role);
+    return '<nav class="bottomnav">'+items.map(function(it){ return renderNavItem(it, true); }).join("")+'</nav>';
+  }
+
+  function render(){
+    var html = '<div class="app-shell">';
+    html += renderSidenav();
+    html += '<div class="content-col">';
+    html += renderTopbar();
+    html += '<main><div class="shell">';
+    html += renderError();
+    switch(state.route){
+      case "gate": html += viewGate(); break;
+      case "mec-home": html += viewMecHome(); break;
+      case "mec-wizard": html += viewMecWizard(); break;
+      case "mec-signature": html += viewMecSignature(); break;
+      case "mec-apply": html += viewMecApply(); break;
+      case "mec-submitted": html += viewMecSubmitted(); break;
+      case "lider-home": html += viewLiderHome(); break;
+      case "lider-detail": html += viewLiderDetail(); break;
+      case "consulta": html += viewConsulta(); break;
+      case "consulta-detail": html += viewConsultaDetail(); break;
+      default: html += "";
+    }
+    html += "</div></main>";
+    html += renderActionBar();
+    html += '</div>'; // content-col
+    html += renderBottomnav();
+    html += '</div>'; // app-shell
+    app.innerHTML = html;
+    afterRender();
+  }
+
+  function renderError(){
+    if(!state.error) return "";
+    return '<div class="banner banner-warn" style="margin-bottom:14px;">⚠️ '+escapeHtml(state.error)+'</div>';
+  }
+
+  function renderTopbar(){
+    var roleLabel = state.role==="lider" ? "Líder" : (state.role==="mecanico" ? "Mecânico" : "");
+    return (
+      '<div class="topbar"><div class="topbar-inner">'+
+        '<div class="brand">'+
+          '<div class="brand-mark"><img src="'+LOGO_ICON+'" alt="Clealco"></div>'+
+          '<div class="brand-text">'+
+            '<div class="brand-title">Apontamento de Frota</div>'+
+            '<div class="brand-sub">Manutenção Automotiva · Clealco</div>'+
+          '</div>'+
+        '</div>'+
+        '<button class="theme-btn" data-action="cycle-theme" title="Alternar tema: '+THEME_META[state.theme].label+'">'+THEME_META[state.theme].icon+'</button>'+
+        (roleLabel ? '<button class="role-pill" data-action="switch-role">'+roleLabel+' · trocar</button>' : '')+
+      '</div></div>'
+    );
+  }
+
+  function renderActionBar(){
+    if(state.route==="mec-wizard"){
+      var w = state.wizard;
+      var isLast = w.step===4;
+      var nextDisabled = false;
+      if(w.step===1 && (!w.frotaNumero || !state.mecNome || !state.mecMatricula)) nextDisabled = true;
+      return (
+        '<div class="action-bar"><div class="action-bar-inner">'+
+          (w.step>1 ? '<button class="btn btn-secondary" data-action="wizard-back">Voltar</button>' : '<button class="btn btn-secondary" data-action="go-mec-home">Cancelar</button>')+
+          (isLast
+            ? '<button class="btn btn-primary" data-action="wizard-submit" '+(state.busy?"disabled":"")+'>'+(state.busy?"Enviando…":"Enviar apontamento")+'</button>'
+            : '<button class="btn btn-primary" data-action="wizard-next" '+(nextDisabled?"disabled":"")+'>Continuar</button>')+
+        '</div></div>'
+      );
+    }
+    if(state.route==="mec-signature"){
+      return (
+        '<div class="action-bar"><div class="action-bar-inner">'+
+          '<button class="btn btn-secondary" data-action="go-mec-home">Voltar</button>'+
+          '<button class="btn btn-primary" data-action="sig-confirm" '+(state.busy?"disabled":"")+'>'+(state.busy?"Salvando…":"Confirmar recebimento")+'</button>'+
+        '</div></div>'
+      );
+    }
+    if(state.route==="mec-apply"){
+      return (
+        '<div class="action-bar"><div class="action-bar-inner">'+
+          '<button class="btn btn-secondary" data-action="go-mec-home">Voltar</button>'+
+          '<button class="btn btn-primary" data-action="apply-confirm" '+(state.busy?"disabled":"")+'>'+(state.busy?"Salvando…":"Concluir OS")+'</button>'+
+        '</div></div>'
+      );
+    }
+    if(state.route==="lider-detail"){
+      var os = findOs(state.currentOsId);
+      if(os && os.status==="pecas_pendentes"){
+        return (
+          '<div class="action-bar"><div class="action-bar-inner">'+
+            '<button class="btn btn-secondary" data-action="go-lider-home">Voltar</button>'+
+            '<button class="btn btn-primary" data-action="lider-confirm-separacao" '+(state.busy?"disabled":"")+'>'+(state.busy?"Salvando…":"Liberar entrega")+'</button>'+
+          '</div></div>'
+        );
+      }
+    }
+    return "";
+  }
+
+  /* ---------------------------------------------------------------
+   * Views
+   * ------------------------------------------------------------- */
+  function viewGate(){
+    return (
+      '<div style="padding-top:8px;">'+
+        '<img src="'+LOGO_FULL+'" alt="Clealco Açúcar, Etanol e Energia" style="height:38px; width:auto; margin-bottom:16px;">'+
+        '<p class="eyebrow">Manutenção Automotiva</p>'+
+        '<h1 style="margin-top:6px;">Quem está entrando? 👋</h1>'+
+        '<p class="muted" style="margin-top:8px; font-weight:600;">Escolha seu perfil para registrar um apontamento ou tratar pedidos de peças.</p>'+
+        '<div class="role-choice">'+
+          '<button class="role-card" data-action="pick-role" data-role="mecanico">'+
+            '<div class="role-icon green">🛠️</div>'+
+            '<div><h3>Sou Mecânico</h3><p class="muted" style="margin-top:3px; font-size:13.5px; font-weight:600;">Checklist, peças e assinatura de recebimento</p></div>'+
+          '</button>'+
+          '<button class="role-card" data-action="pick-role" data-role="lider">'+
+            '<div class="role-icon blue">📋</div>'+
+            '<div><h3>Sou Líder</h3><p class="muted" style="margin-top:3px; font-size:13.5px; font-weight:600;">Separar peças e liberar entrega</p></div>'+
+          '</button>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function viewMecHome(){
+    var mine = osList().filter(function(o){ return o.mecanicoMatricula === state.mecMatricula; });
+    var pending = mine.filter(function(o){ return o.status !== "concluida"; });
+    var done = mine.filter(function(o){ return o.status === "concluida"; });
+    var html = '<div class="stack">';
+    html += '<div class="row-between">'+
+      '<div><p class="eyebrow">Bem-vindo</p><h1 style="margin-top:4px;">'+escapeHtml(state.mecNome||"Mecânico")+' 👋</h1>'+
+      '<p class="mono muted" style="margin-top:2px; font-weight:600;">Matrícula '+escapeHtml(state.mecMatricula||"—")+'</p></div>'+
+      '</div>';
+    html += '<button class="btn btn-primary btn-block" data-action="new-apontamento" style="padding:17px;">➕ Novo apontamento</button>';
+
+    html += '<div class="kpi-row">'+
+      '<div class="kpi yellow"><div class="kpi-num">'+pending.length+'</div><div class="kpi-label">Em aberto</div></div>'+
+      '<div class="kpi green"><div class="kpi-num">'+done.length+'</div><div class="kpi-label">Concluídas</div></div>'+
+      '<div class="kpi blue"><div class="kpi-num">'+mine.length+'</div><div class="kpi-label">Total</div></div>'+
+    '</div>';
+
+    html += '<h2 style="margin-top:6px;">Minhas OS em aberto</h2>';
+    if(pending.length===0){
+      html += '<div class="empty-state"><div class="icon">✅</div>Nenhuma OS pendente no momento.</div>';
+    } else {
+      html += '<div class="stack">' + pending.map(renderMecOsCard).join("") + '</div>';
+    }
+    if(done.length){
+      html += '<h2 style="margin-top:10px;">Histórico recente</h2>';
+      html += '<div class="stack">' + done.slice(0,4).map(renderMecOsCard).join("") + '</div>';
+      html += '<button class="btn btn-ghost" data-action="nav-goto" data-route="consulta">Ver todos os serviços →</button>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderMecOsCard(o){
+    var actionLabel = null, action = null;
+    if(o.status==="pecas_pendentes"){ actionLabel = "Aguardando o líder separar as peças"; }
+    if(o.status==="aguardando_assinatura"){ actionLabel = "Assinar recebimento de peças →"; action="open-signature"; }
+    if(o.status==="aguardando_aplicacao"){ actionLabel = "Marcar peças aplicadas →"; action="open-apply"; }
+    var tmpl = CHECKLIST_TEMPLATES[o.frotaTipo] || {label:o.frotaTipo};
+    var body = (
+      '<div class="os-top">'+
+        '<div><div class="os-frota">'+escapeHtml(tmpl.label)+' '+escapeHtml(o.frotaNumero)+'</div>'+
+        '<div class="os-code">'+escapeHtml(o.osCode)+'</div></div>'+
+        '<span class="pill '+(STATUS_PILL_CLASS[o.status]||"pill-gray")+'">'+(STATUS_LABEL[o.status]||o.status)+'</span>'+
+      '</div>'+
+      '<div class="os-meta"><span>🕓 '+fmtDate(o.dataServico)+'</span><span>⚙️ '+(o.pecas?o.pecas.length:0)+' peça(s)</span></div>'+
+      (actionLabel ? '<div style="font-size:13.5px; font-weight:700; color:'+(action?"var(--blue)":"var(--text-muted)")+'; margin-top:2px;">'+actionLabel+'</div>' : '')
+    );
+    if(action){ return '<button class="os-card" data-action="'+action+'" data-id="'+o.id+'">'+body+'</button>'; }
+    return '<div class="os-card" style="cursor:default;">'+body+'</div>';
+  }
+
+  function viewMecWizard(){
+    var w = state.wizard;
+    var titles = ["Identificação","Checklist","Peças necessárias","Revisão"];
+    var dots = "";
+    for(var i=1;i<=4;i++){ dots += '<div class="step-dot '+(i<w.step?"done":(i===w.step?"current":""))+'"></div>'; }
+    var html = '<div class="steps">'+dots+'</div>';
+    html += '<div class="step-label">Etapa '+w.step+' de 4 · '+titles[w.step-1]+'</div>';
+    if(w.step===1) html += stepIdentificacao(w);
+    else if(w.step===2) html += stepChecklist(w);
+    else if(w.step===3) html += stepPecas(w);
+    else html += stepRevisao(w);
+    return html;
+  }
+
+  function stepIdentificacao(w){
+    var opts = FROTA_TIPOS.map(function(t){
+      return '<option value="'+t+'" '+(w.frotaTipo===t?"selected":"")+'>'+CHECKLIST_TEMPLATES[t].label+'</option>';
+    }).join("");
+    return (
+      '<div class="stack">'+
+        '<div class="card stack">'+
+          '<h3>Você</h3>'+
+          '<div class="field"><label class="field-label">Nome do mecânico</label>'+
+            '<input type="text" id="in-mecNome" value="'+escapeHtml(state.mecNome)+'" placeholder="Nome completo" autocomplete="off">'+
+          '</div>'+
+          '<div class="field"><label class="field-label">Matrícula</label>'+
+            '<input type="text" id="in-mecMatricula" class="mono" value="'+escapeHtml(state.mecMatricula)+'" placeholder="Ex.: 4521" autocomplete="off">'+
+          '</div>'+
+          '<div class="field"><label class="field-label">Foto do crachá (opcional)</label>'+ renderPhotoBox("cracha", w.crachaAssetId)+'</div>'+
+        '</div>'+
+        '<div class="card stack">'+
+          '<h3>Equipamento</h3>'+
+          '<div class="field-grid">'+
+            '<div class="field"><label class="field-label">Frota (tipo)</label><select id="in-frotaTipo">'+opts+'</select></div>'+
+            '<div class="field"><label class="field-label">Número da frota</label><input type="text" id="in-frotaNumero" class="mono" value="'+escapeHtml(w.frotaNumero)+'" placeholder="Ex.: CH-104"></div>'+
+          '</div>'+
+          '<div class="field"><label class="field-label">Foto do equipamento</label>'+ renderPhotoBox("equipamento", w.equipamentoAssetId)+'</div>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function renderPhotoBox(kind, assetId){
+    var url = assetId ? assetUrl(assetId) : null;
+    var caption = kind==="cracha" ? "📇 Toque para fotografar o crachá" : "📷 Toque para fotografar o equipamento";
+    return (
+      '<label class="photo-box '+(url?"filled":"")+'">'+
+        (url ? '<img src="'+url+'" alt="foto">' : '')+
+        '<span class="photo-caption">'+caption+'</span>'+
+        '<input type="file" accept="image/*" capture="environment" style="display:none" data-photo-input="'+kind+'">'+
+        (url ? '<button type="button" class="photo-retake" data-action="retake-photo" data-kind="'+kind+'">Refazer</button>' : '')+
+      '</label>'
+    );
+  }
+
+  // Photo box for checklist "Problema" items — no capture attribute, so the
+  // device picker offers both "Câmera" and "Galeria" instead of forcing the camera.
+  function renderItemPhotoBox(itemId, assetId, missing){
+    var url = assetId ? assetUrl(assetId) : null;
+    return (
+      '<label class="photo-box item-photo '+(url?"filled":"")+' '+(missing?"missing":"")+'" style="min-height:96px; margin-top:8px;">'+
+        (url ? '<img src="'+url+'" alt="foto do problema">' : '')+
+        '<span class="photo-caption">📷 Foto obrigatória do problema<br><span style="font-size:11.5px; font-weight:600;">tirar foto ou escolher da galeria</span></span>'+
+        '<input type="file" accept="image/*" style="display:none" data-photo-input="problema:'+itemId+'">'+
+        (url ? '<button type="button" class="photo-retake" data-action="retake-item-photo" data-item="'+itemId+'">Refazer</button>' : '')+
+      '</label>'
+    );
+  }
+
+  function stepChecklist(w){
+    var tmpl = CHECKLIST_TEMPLATES[w.frotaTipo] || {sections:[]};
+    var html = '<div class="stack">';
+    html += '<div class="card field-grid">'+
+      '<div class="field"><label class="field-label">Horímetro</label><input type="text" inputmode="decimal" class="mono" id="in-horimetro" value="'+escapeHtml(w.horimetro)+'" placeholder="Ex.: 4380.5"></div>'+
+      '<div class="field"><label class="field-label">Data</label><input type="date" id="in-dataServico" value="'+w.dataServico+'"></div>'+
+    '</div>';
+    if(tmpl.generic){
+      html += '<div class="banner banner-warn">Checklist padrão genérico para '+tmpl.label+'. Envie o caderno padrinho deste equipamento para configurar os itens específicos.</div>';
+    }
+    html += '<div class="card">';
+    tmpl.sections.forEach(function(sec){
+      html += '<div class="checklist-section"><div class="checklist-section-title">'+escapeHtml(sec.title)+'</div>';
+      sec.items.forEach(function(item){
+        var entry = w.checklist[item.id]||{};
+        var val = entry.status || "";
+        var obs = entry.obs || "";
+        var missingPhoto = val==="problema" && !entry.fotoAssetId;
+        html += (
+          '<div class="checklist-item">'+
+            '<div class="checklist-item-head"><div class="checklist-item-text"><span class="checklist-item-num">'+item.id+'</span>'+escapeHtml(item.text)+'</div></div>'+
+            '<div class="segmented" data-item="'+item.id+'">'+
+              '<button type="button" data-val="ok" class="'+(val==="ok"?"active":"")+'">OK</button>'+
+              '<button type="button" data-val="problema" class="'+(val==="problema"?"active":"")+'">Problema</button>'+
+              '<button type="button" data-val="na" class="'+(val==="na"?"active":"")+'">N/A</button>'+
+            '</div>'+
+            (val==="problema" ? '<textarea placeholder="Descreva o problema encontrado…" data-obs="'+item.id+'" style="margin-top:8px;">'+escapeHtml(obs)+'</textarea>' : '')+
+            (val==="problema" ? renderItemPhotoBox(item.id, entry.fotoAssetId, missingPhoto) : '')+
+            (missingPhoto ? '<div class="muted" style="color:var(--red); font-size:12px; font-weight:700; margin-top:5px;">⚠️ Anexe uma foto para continuar</div>' : '')+
+          '</div>'
+        );
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="card field"><label class="field-label">Observações gerais</label>'+
+      '<textarea id="in-obsGeral" placeholder="Alguma observação adicional sobre a inspeção…">'+escapeHtml(w.obsGeral)+'</textarea></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function stepPecas(w){
+    var html = '<div class="stack">';
+    html += '<div class="banner banner-ok">Liste as peças que o líder precisa separar para pendências futuras. Deixe em branco se não precisar de nenhuma.</div>';
+    html += '<div class="card">';
+    w.pecas.forEach(function(p, idx){
+      html += (
+        '<div class="part-row" data-part="'+p.id+'">'+
+          '<div class="field" style="flex:1.4;"><label class="field-label">Peça '+(idx+1)+'</label><input type="text" data-part-field="nome" value="'+escapeHtml(p.nome)+'" placeholder="Ex.: Mangueira hidráulica L.D."></div>'+
+          '<div class="field" style="flex:.5;"><label class="field-label">Qtd.</label><input type="text" inputmode="numeric" class="mono" data-part-field="qtd" value="'+escapeHtml(p.qtd)+'" placeholder="1"></div>'+
+          (w.pecas.length>1 ? '<button type="button" class="part-remove" data-action="remove-part" data-id="'+p.id+'" title="Remover">×</button>' : '<span style="width:26px;"></span>')+
+        '</div>'+
+        '<div class="field" style="padding:0 0 10px;"><input type="text" data-part-field="obs" value="'+escapeHtml(p.obs)+'" placeholder="Observação (opcional)"></div>'
+      );
+    });
+    html += '<button type="button" class="btn btn-ghost" data-action="add-part">+ Adicionar peça</button>';
+    html += '</div></div>';
+    return html;
+  }
+
+  function stepRevisao(w){
+    var tmpl = CHECKLIST_TEMPLATES[w.frotaTipo];
+    var itemsChecked = Object.keys(w.checklist).filter(function(k){ return w.checklist[k].status; }).length;
+    var totalItems = tmpl.sections.reduce(function(a,s){ return a+s.items.length; },0);
+    var problemas = Object.keys(w.checklist).filter(function(k){ return w.checklist[k].status==="problema"; }).length;
+    var pecasValidas = w.pecas.filter(function(p){ return p.nome.trim(); });
+    return (
+      '<div class="stack">'+
+        '<div class="card stack">'+
+          '<h3>Resumo</h3>'+
+          '<div class="row-between"><span class="muted">Mecânico</span><span>'+escapeHtml(state.mecNome)+' · <span class="mono">'+escapeHtml(state.mecMatricula)+'</span></span></div>'+
+          '<div class="row-between"><span class="muted">Frota</span><span>'+tmpl.label+' '+escapeHtml(w.frotaNumero)+'</span></div>'+
+          '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(w.horimetro||"—")+'</span></div>'+
+          '<div class="row-between"><span class="muted">Data</span><span>'+fmtDate(w.dataServico)+'</span></div>'+
+          '<div class="row-between"><span class="muted">Checklist preenchido</span><span>'+itemsChecked+' de '+totalItems+'</span></div>'+
+          (problemas>0 ? '<div class="banner banner-danger">⚠️ '+problemas+' item(ns) marcados como Problema</div>' : '')+
+        '</div>'+
+        '<div class="card stack">'+
+          '<h3>Peças a solicitar</h3>'+
+          (pecasValidas.length===0
+            ? '<p class="muted" style="font-weight:600;">Nenhuma peça será solicitada — a OS será encerrada assim que enviada.</p>'
+            : '<div class="stack">'+pecasValidas.map(function(p){
+                return '<div class="row-between"><span style="font-weight:600;">'+escapeHtml(p.nome)+'</span><span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></div>';
+              }).join("")+'</div>')+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function viewMecSubmitted(){
+    var os = state.lastSubmittedOs;
+    if(!os) return '<div class="empty-state">Apontamento não encontrado.</div>';
+    var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {label:os.frotaTipo};
+    return (
+      '<div class="stack">'+
+        '<div class="card stack" style="text-align:center; padding:26px 16px;">'+
+          '<div style="font-size:40px;">✅</div>'+
+          '<h1>Apontamento enviado!</h1>'+
+          '<p class="mono muted">'+escapeHtml(os.osCode)+'</p>'+
+          '<p class="muted" style="font-weight:600;">'+tmpl.label+' '+escapeHtml(os.frotaNumero)+' · '+escapeHtml(os.mecanicoNome)+'</p>'+
+        '</div>'+
+        '<div class="card stack">'+
+          '<h3>Notificar por e-mail (teste)</h3>'+
+          '<p class="muted" style="font-size:13px; font-weight:600;">Tentamos abrir seu app de e-mail com a mensagem pronta para <span class="mono">'+NOTIFY_EMAIL+'</span>. Se não abrir nada (comum aqui no navegador do app), use "Copiar mensagem" e cole no seu e-mail.</p>'+
+          '<button type="button" class="btn btn-blue btn-block" data-action="send-os-email">📧 Tentar abrir e-mail</button>'+
+          '<button type="button" class="btn btn-secondary btn-block" data-action="copy-os-email" id="btn-copy-email">📋 Copiar mensagem</button>'+
+        '</div>'+
+        '<button class="btn btn-primary btn-block" data-action="go-mec-home">Concluir</button>'+
+      '</div>'
+    );
+  }
+
+  function viewMecSignature(){
+    var os = findOs(state.currentOsId);
+    if(!os) return '<div class="empty-state">OS não encontrada.</div>';
+    var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {label:os.frotaTipo};
+    var pecas = (os.pecas||[]).filter(function(p){ return p.entregue; });
+    return (
+      '<div class="stack">'+
+        '<button class="back-link" data-action="go-mec-home">← Voltar</button>'+
+        '<p class="eyebrow">'+escapeHtml(os.osCode)+' · '+tmpl.label+' '+escapeHtml(os.frotaNumero)+'</p>'+
+        '<h1>Confirmar recebimento</h1>'+
+        '<div class="card stack">'+
+          '<h3>Peças liberadas pelo líder'+(os.liderNome?(' · '+escapeHtml(os.liderNome)):'')+'</h3>'+
+          '<div class="stack">'+pecas.map(function(p){
+            return '<div class="row-between"><span style="font-weight:600;">'+escapeHtml(p.nome)+'</span><span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></div>';
+          }).join("")+'</div>'+
+        '</div>'+
+        '<div class="card stack">'+
+          '<h3>Assinatura do mecânico</h3>'+
+          '<p class="muted" style="font-size:13px; font-weight:600;">Assine abaixo confirmando que recebeu as peças acima.</p>'+
+          '<canvas class="sig-pad" id="sig-canvas"></canvas>'+
+          '<button type="button" class="btn btn-secondary btn-sm" data-action="sig-clear" style="align-self:flex-start;">Limpar assinatura</button>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function viewMecApply(){
+    var os = findOs(state.currentOsId);
+    if(!os) return '<div class="empty-state">OS não encontrada.</div>';
+    var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {label:os.frotaTipo};
+    var pecas = (os.pecas||[]).filter(function(p){ return p.entregue; });
+    return (
+      '<div class="stack">'+
+        '<button class="back-link" data-action="go-mec-home">← Voltar</button>'+
+        '<p class="eyebrow">'+escapeHtml(os.osCode)+' · '+tmpl.label+' '+escapeHtml(os.frotaNumero)+'</p>'+
+        '<h1>Peças aplicadas na máquina</h1>'+
+        '<p class="muted" style="font-weight:600;">Marque as peças que você efetivamente instalou. Ao concluir, esta OS é encerrada.</p>'+
+        '<div class="card">'+
+          pecas.map(function(p){
+            return (
+              '<label class="checkbox-row">'+
+                '<input type="checkbox" data-apply-id="'+p.id+'" '+(p.aplicada?"checked":"")+'>'+
+                '<span class="checkbox-row-text">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span>'+
+                (p.obs?('<br><span class="muted" style="font-size:12.5px; font-weight:600;">'+escapeHtml(p.obs)+'</span>'):'')+
+                '</span>'+
+              '</label>'
+            );
+          }).join("")+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function viewLiderHome(){
+    var all = osList();
+    var fila = all.filter(function(o){ return o.status==="pecas_pendentes"; });
+    var emAndamento = all.filter(function(o){ return o.status==="aguardando_assinatura" || o.status==="aguardando_aplicacao"; });
+    var historico = all.filter(function(o){ return o.status==="concluida"; });
+    var html = '<div class="stack">';
+    html += '<p class="eyebrow">Líder</p><h1 style="margin-top:4px;">Fila de peças 📋</h1>';
+    html += '<div class="kpi-row">'+
+      '<div class="kpi yellow"><div class="kpi-num">'+fila.length+'</div><div class="kpi-label">A separar</div></div>'+
+      '<div class="kpi blue"><div class="kpi-num">'+emAndamento.length+'</div><div class="kpi-label">Em andamento</div></div>'+
+      '<div class="kpi green"><div class="kpi-num">'+historico.length+'</div><div class="kpi-label">Concluídas</div></div>'+
+    '</div>';
+    html += '<div class="tabs">'+
+      '<button class="tab-btn '+(state.liderTab==="fila"?"active":"")+'" data-action="lider-tab" data-tab="fila">Fila &amp; andamento</button>'+
+      '<button class="tab-btn '+(state.liderTab==="historico"?"active":"")+'" data-action="lider-tab" data-tab="historico">Histórico</button>'+
+    '</div>';
+    if(state.liderTab==="fila"){
+      var active = fila.concat(emAndamento);
+      html += active.length===0
+        ? '<div class="empty-state"><div class="icon">📭</div>Nenhum pedido de peça pendente.</div>'
+        : '<div class="stack">'+active.map(renderLiderOsCard).join("")+'</div>';
+    } else {
+      html += historico.length===0
+        ? '<div class="empty-state"><div class="icon">🗂️</div>Nenhuma OS concluída ainda.</div>'
+        : '<div class="stack">'+historico.map(renderLiderOsCard).join("")+'</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderLiderOsCard(o){
+    var tmpl = CHECKLIST_TEMPLATES[o.frotaTipo] || {label:o.frotaTipo};
+    var body = (
+      '<div class="os-top">'+
+        '<div><div class="os-frota">'+escapeHtml(tmpl.label)+' '+escapeHtml(o.frotaNumero)+'</div>'+
+        '<div class="os-code">'+escapeHtml(o.osCode)+'</div></div>'+
+        '<span class="pill '+(STATUS_PILL_CLASS[o.status]||"pill-gray")+'">'+(STATUS_LABEL[o.status]||o.status)+'</span>'+
+      '</div>'+
+      '<div class="os-meta"><span>👤 '+escapeHtml(o.mecanicoNome)+'</span><span>⚙️ '+(o.pecas?o.pecas.length:0)+' peça(s)</span><span>🕓 '+fmtDate(o.dataServico)+'</span></div>'
+    );
+    return '<button class="os-card" data-action="open-lider-os" data-id="'+o.id+'">'+body+'</button>';
+  }
+
+  function viewLiderDetail(){
+    var os = findOs(state.currentOsId);
+    if(!os) return '<div class="empty-state">OS não encontrada.</div>';
+    var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {label:os.frotaTipo, sections:[]};
+    var problemas = [];
+    Object.keys(os.checklist||{}).forEach(function(k){
+      var c = os.checklist[k];
+      if(c && c.status==="problema"){
+        var item = null;
+        tmpl.sections.forEach(function(s){ s.items.forEach(function(it){ if(it.id===k) item=it; }); });
+        problemas.push({ id:k, text: item?item.text:k, obs:c.obs, fotoAssetId:c.fotoAssetId });
+      }
+    });
+    var html = '<div class="stack">';
+    html += '<button class="back-link" data-action="go-lider-home">← Voltar para a fila</button>';
+    html += '<div class="row-between"><div><p class="eyebrow">'+escapeHtml(os.osCode)+'</p><h1 style="margin-top:2px;">'+tmpl.label+' '+escapeHtml(os.frotaNumero)+'</h1></div>'+
+      '<span class="pill '+(STATUS_PILL_CLASS[os.status]||"pill-gray")+'">'+(STATUS_LABEL[os.status]||os.status)+'</span></div>';
+    html += '<div class="card stack">'+
+      '<div class="row-between"><span class="muted">Mecânico</span><span style="font-weight:600;">'+escapeHtml(os.mecanicoNome)+' · <span class="mono">'+escapeHtml(os.mecanicoMatricula)+'</span></span></div>'+
+      '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(os.horimetro||"—")+'</span></div>'+
+      '<div class="row-between"><span class="muted">Data</span><span style="font-weight:600;">'+fmtDate(os.dataServico)+'</span></div>'+
+      (os.equipamentoAssetId ? '<img src="'+assetUrl(os.equipamentoAssetId)+'" style="width:100%; border-radius:14px; margin-top:4px;" alt="Foto do equipamento">' : '')+
+    '</div>';
+    if(problemas.length){
+      html += '<div class="card stack"><h3 style="color:var(--red);">⚠️ Itens com problema no checklist</h3>';
+      html += problemas.map(function(p){
+        return '<div><div style="font-size:13.5px; font-weight:600;"><span class="mono muted">'+p.id+'</span> '+escapeHtml(p.text)+'</div>'+
+          (p.obs?('<div class="muted" style="font-size:12.5px; margin-top:2px; font-weight:600;">'+escapeHtml(p.obs)+'</div>'):'')+
+          (p.fotoAssetId?('<img src="'+assetUrl(p.fotoAssetId)+'" alt="Foto do problema" style="width:100%; max-width:220px; border-radius:12px; margin-top:6px; display:block;">'):'')+'</div>';
+      }).join('<hr class="divider">');
+      html += '</div>';
+    }
+    if(os.obsGeral){
+      html += '<div class="card"><h3>Observações do mecânico</h3><p style="margin-top:6px; font-size:14px; font-weight:600;">'+escapeHtml(os.obsGeral)+'</p></div>';
+    }
+    html += '<div class="card">';
+    html += '<h3 style="margin-bottom:8px;">Peças solicitadas</h3>';
+    if(os.status==="pecas_pendentes"){
+      html += '<p class="muted" style="font-size:13px; margin-bottom:8px; font-weight:600;">Marque o que você vai separar e entregar ao mecânico agora.</p>';
+      (os.pecas||[]).forEach(function(p){
+        html += (
+          '<label class="checkbox-row">'+
+            '<input type="checkbox" data-separar-id="'+p.id+'" checked>'+
+            '<span class="checkbox-row-text">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span>'+
+            (p.obs?('<br><span class="muted" style="font-size:12.5px; font-weight:600;">'+escapeHtml(p.obs)+'</span>'):'')+
+            '</span>'+
+          '</label>'
+        );
+      });
+      html += '<div class="field" style="margin-top:12px;"><label class="field-label">Seu nome (responsável pelo setor)</label>'+
+        '<input type="text" id="in-liderNome" value="'+escapeHtml(state.liderNome)+'" placeholder="Nome do líder"></div>';
+    } else {
+      (os.pecas||[]).forEach(function(p){
+        var pillClass = p.aplicada ? "pill-green" : (p.entregue ? "pill-blue" : "pill-gray");
+        var pillText = p.aplicada ? "Aplicada" : (p.entregue ? "Entregue" : "Não entregue");
+        html += '<div class="row-between" style="padding:7px 0; border-bottom:1px solid var(--border);">'+
+          '<span style="font-weight:600;">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></span>'+
+          '<span class="pill '+pillClass+'">'+pillText+'</span></div>';
+      });
+      if(os.liderNome){ html += '<p class="muted" style="font-size:12.5px; margin-top:8px; font-weight:600;">Separado por '+escapeHtml(os.liderNome)+' em '+fmtDateTime(os.liderSepararEm)+'</p>'; }
+      if(os.assinaturaAssetId){
+        html += '<div style="margin-top:10px;"><p class="field-label">Assinatura de recebimento</p>'+
+          '<img src="'+assetUrl(os.assinaturaAssetId)+'" style="max-width:220px; background:#fff; border-radius:10px; border:2px solid var(--border);" alt="Assinatura"></div>';
+      }
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  /* ---------------------- Consulta (histórico) ---------------------- */
+  function viewConsulta(){
+    var f = state.consultaFilters;
+    var all = osList().slice().sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
+    var filtered = all.filter(function(o){
+      var matchQ = !f.q || norm(o.mecanicoNome).indexOf(norm(f.q))>-1 || norm(o.frotaNumero).indexOf(norm(f.q))>-1 || norm(o.osCode).indexOf(norm(f.q))>-1;
+      var matchTipo = f.tipo==="todos" || o.frotaTipo===f.tipo;
+      var matchStatus = f.status==="todos" || o.status===f.status;
+      return matchQ && matchTipo && matchStatus;
+    });
+    var html = '<div class="stack">';
+    html += '<p class="eyebrow">Consulta</p><h1 style="margin-top:4px;">Serviços executados 📜</h1>';
+    html += '<div class="card filter-bar">'+
+      '<input type="text" id="in-consultaQ" value="'+escapeHtml(f.q)+'" placeholder="Buscar por OS, frota ou mecânico…">'+
+      '<div class="filter-row">'+
+        '<select id="in-consultaTipo">'+
+          '<option value="todos" '+(f.tipo==="todos"?"selected":"")+'>Todas as frotas</option>'+
+          FROTA_TIPOS.map(function(t){ return '<option value="'+t+'" '+(f.tipo===t?"selected":"")+'>'+CHECKLIST_TEMPLATES[t].label+'</option>'; }).join("")+
+        '</select>'+
+        '<select id="in-consultaStatus">'+
+          '<option value="todos" '+(f.status==="todos"?"selected":"")+'>Todos os status</option>'+
+          Object.keys(STATUS_LABEL).map(function(s){ return '<option value="'+s+'" '+(f.status===s?"selected":"")+'>'+STATUS_LABEL[s]+'</option>'; }).join("")+
+        '</select>'+
+      '</div>'+
+    '</div>';
+    html += '<p class="muted" style="font-weight:700; font-size:13px;">'+filtered.length+' registro(s) encontrado(s)</p>';
+    html += filtered.length===0
+      ? '<div class="empty-state"><div class="icon">🔍</div>Nenhum serviço encontrado com esses filtros.</div>'
+      : '<div class="stack">'+filtered.map(renderLiderOsCard).join("").split('data-action="open-lider-os"').join('data-action="open-consulta-os"')+'</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function viewConsultaDetail(){
+    var os = findOs(state.consultaOsId);
+    if(!os) return '<div class="empty-state">OS não encontrada.</div>';
+    var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {label:os.frotaTipo, sections:[]};
+    var html = '<div class="stack">';
+    html += '<button class="back-link" data-action="nav-goto" data-route="consulta">← Voltar aos serviços</button>';
+    html += '<div class="row-between"><div><p class="eyebrow">'+escapeHtml(os.osCode)+'</p><h1 style="margin-top:2px;">'+tmpl.label+' '+escapeHtml(os.frotaNumero)+'</h1></div>'+
+      '<span class="pill '+(STATUS_PILL_CLASS[os.status]||"pill-gray")+'">'+(STATUS_LABEL[os.status]||os.status)+'</span></div>';
+
+    html += '<div class="card stack">'+
+      '<div class="row-between"><span class="muted">Mecânico</span><span style="font-weight:600;">'+escapeHtml(os.mecanicoNome)+' · <span class="mono">'+escapeHtml(os.mecanicoMatricula)+'</span></span></div>'+
+      '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(os.horimetro||"—")+'</span></div>'+
+      '<div class="row-between"><span class="muted">Data do serviço</span><span style="font-weight:600;">'+fmtDate(os.dataServico)+'</span></div>'+
+      '<div class="row-between"><span class="muted">Aberta em</span><span style="font-weight:600;">'+fmtDateTime(os.createdAt)+'</span></div>'+
+      (os.concluidaEm ? '<div class="row-between"><span class="muted">Concluída em</span><span style="font-weight:600;">'+fmtDateTime(os.concluidaEm)+'</span></div>' : '')+
+    '</div>';
+
+    if(os.equipamentoAssetId || os.crachaAssetId){
+      html += '<div class="card"><h3 style="margin-bottom:8px;">Fotos</h3><div style="display:flex; gap:8px; flex-wrap:wrap;">'+
+        (os.equipamentoAssetId ? '<img src="'+assetUrl(os.equipamentoAssetId)+'" style="width:calc(50% - 4px); border-radius:12px;" alt="Equipamento">' : '')+
+        (os.crachaAssetId ? '<img src="'+assetUrl(os.crachaAssetId)+'" style="width:calc(50% - 4px); border-radius:12px;" alt="Crachá">' : '')+
+      '</div></div>';
+    }
+
+    html += '<div class="card"><h3 style="margin-bottom:6px;">Checklist completo</h3>';
+    tmpl.sections.forEach(function(sec){
+      html += '<div class="checklist-section"><div class="checklist-section-title">'+escapeHtml(sec.title)+'</div>';
+      sec.items.forEach(function(item){
+        var c = (os.checklist||{})[item.id] || {};
+        var pillClass = c.status==="ok" ? "pill-green" : (c.status==="problema" ? "pill-red" : "pill-gray");
+        var pillText = c.status==="ok" ? "OK" : (c.status==="problema" ? "Problema" : (c.status==="na" ? "N/A" : "Não avaliado"));
+        html += '<div class="checklist-item"><div class="checklist-item-head">'+
+          '<div class="checklist-item-text"><span class="checklist-item-num">'+item.id+'</span>'+escapeHtml(item.text)+'</div>'+
+          '<span class="pill '+pillClass+'">'+pillText+'</span></div>'+
+          (c.obs?('<div class="muted" style="font-size:12.5px; font-weight:600;">'+escapeHtml(c.obs)+'</div>'):'')+
+          (c.fotoAssetId?('<img src="'+assetUrl(c.fotoAssetId)+'" alt="Foto do problema" style="width:100%; max-width:220px; border-radius:12px; margin-top:6px; display:block;">'):'')+
+        '</div>';
+      });
+      html += '</div>';
+    });
+    if(os.obsGeral){ html += '<p class="field-label" style="margin-top:10px;">Observações gerais</p><p style="font-size:14px; font-weight:600;">'+escapeHtml(os.obsGeral)+'</p>'; }
+    html += '</div>';
+
+    if((os.pecas||[]).length){
+      html += '<div class="card"><h3 style="margin-bottom:8px;">Peças</h3>';
+      os.pecas.forEach(function(p){
+        var pillClass = p.aplicada ? "pill-green" : (p.entregue ? "pill-blue" : "pill-yellow");
+        var pillText = p.aplicada ? "Aplicada" : (p.entregue ? "Entregue" : "Solicitada");
+        html += '<div class="row-between" style="padding:7px 0; border-bottom:1px solid var(--border);">'+
+          '<span style="font-weight:600;">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></span>'+
+          '<span class="pill '+pillClass+'">'+pillText+'</span></div>';
+      });
+      if(os.liderNome){ html += '<p class="muted" style="font-size:12.5px; margin-top:8px; font-weight:600;">Separado por '+escapeHtml(os.liderNome)+' em '+fmtDateTime(os.liderSepararEm)+'</p>'; }
+      if(os.assinaturaAssetId){
+        html += '<div style="margin-top:10px;"><p class="field-label">Assinatura de recebimento</p>'+
+          '<img src="'+assetUrl(os.assinaturaAssetId)+'" style="max-width:220px; background:#fff; border-radius:10px; border:2px solid var(--border);" alt="Assinatura"></div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  /* ---------------------------------------------------------------
+   * Signature pad
+   * ------------------------------------------------------------- */
+  var sigCtx = null, sigCanvas = null, sigLast = null;
+  function initSignaturePad(){
+    sigCanvas = document.getElementById("sig-canvas");
+    if(!sigCanvas) return;
+    var ratio = window.devicePixelRatio || 1;
+    var rect = sigCanvas.getBoundingClientRect();
+    sigCanvas.width = rect.width * ratio;
+    sigCanvas.height = rect.height * ratio;
+    sigCtx = sigCanvas.getContext("2d");
+    sigCtx.scale(ratio, ratio);
+    var styles = getComputedStyle(document.documentElement);
+    sigCtx.strokeStyle = styles.getPropertyValue("--text").trim() || "#000";
+    sigCtx.lineWidth = 2.4;
+    sigCtx.lineCap = "round";
+    sigCtx.lineJoin = "round";
+    function pos(e){
+      var r = sigCanvas.getBoundingClientRect();
+      var cx = (e.touches ? e.touches[0].clientX : e.clientX);
+      var cy = (e.touches ? e.touches[0].clientY : e.clientY);
+      return { x: cx - r.left, y: cy - r.top };
+    }
+    function start(e){ e.preventDefault(); state.sigDrawing = true; sigLast = pos(e); }
+    function move(e){
+      if(!state.sigDrawing) return;
+      e.preventDefault();
+      var p = pos(e);
+      sigCtx.beginPath(); sigCtx.moveTo(sigLast.x, sigLast.y); sigCtx.lineTo(p.x, p.y); sigCtx.stroke();
+      sigLast = p; state.sigHasStroke = true;
+    }
+    function end(){ state.sigDrawing = false; }
+    sigCanvas.addEventListener("pointerdown", start);
+    sigCanvas.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    sigCanvas.addEventListener("touchstart", start, {passive:false});
+    sigCanvas.addEventListener("touchmove", move, {passive:false});
+    sigCanvas.addEventListener("touchend", end);
+  }
+  function clearSignature(){
+    if(sigCtx && sigCanvas){ sigCtx.clearRect(0,0,sigCanvas.width, sigCanvas.height); }
+    state.sigHasStroke = false;
+  }
+
+  /* ---------------------------------------------------------------
+   * Event wiring
+   * ------------------------------------------------------------- */
+  function afterRender(){
+    if(state.route==="mec-signature"){ initSignaturePad(); }
+
+    app.querySelectorAll("[data-photo-input]").forEach(function(input){
+      input.addEventListener("change", function(e){
+        var file = e.target.files && e.target.files[0];
+        if(!file) return;
+        var kind = input.getAttribute("data-photo-input");
+        state.busy = true; render();
+        uploadImage(file).then(function(id){
+          state.busy = false;
+          if(kind==="cracha"){ state.wizard.crachaAssetId = id; }
+          else if(kind==="equipamento"){ state.wizard.equipamentoAssetId = id; }
+          else if(kind.indexOf("problema:")===0){
+            var itemId = kind.slice("problema:".length);
+            var entry = state.wizard.checklist[itemId] || {};
+            entry.fotoAssetId = id;
+            state.wizard.checklist[itemId] = entry;
+          }
+          if(!id){ state.error = "Não foi possível salvar a foto agora. Tente novamente."; }
+          render();
+        });
+      });
+    });
+
+    app.querySelectorAll(".segmented[data-item]").forEach(function(seg){
+      seg.querySelectorAll("button").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var itemId = seg.getAttribute("data-item");
+          var val = btn.getAttribute("data-val");
+          var cur = state.wizard.checklist[itemId] || {};
+          cur.status = (cur.status===val ? "" : val);
+          state.wizard.checklist[itemId] = cur;
+          render();
+        });
+      });
+    });
+    app.querySelectorAll("textarea[data-obs]").forEach(function(ta){
+      ta.addEventListener("input", function(){
+        var id = ta.getAttribute("data-obs");
+        var cur = state.wizard.checklist[id] || {};
+        cur.obs = ta.value;
+        state.wizard.checklist[id] = cur;
+      });
+    });
+
+    app.querySelectorAll("[data-part]").forEach(function(row){
+      var id = row.getAttribute("data-part");
+      row.querySelectorAll("[data-part-field]").forEach(function(inp){
+        inp.addEventListener("input", function(){
+          var part = state.wizard.pecas.find(function(p){ return p.id===id; });
+          if(part) part[inp.getAttribute("data-part-field")] = inp.value;
+        });
+      });
+    });
+
+    bindInput("in-mecNome", function(v){ state.mecNome = v; });
+    bindInput("in-mecMatricula", function(v){ state.mecMatricula = v; });
+    bindInput("in-frotaNumero", function(v){ state.wizard.frotaNumero = v; });
+    bindInput("in-horimetro", function(v){ state.wizard.horimetro = v; });
+    bindInput("in-dataServico", function(v){ state.wizard.dataServico = v; });
+    bindInput("in-obsGeral", function(v){ state.wizard.obsGeral = v; });
+    bindInput("in-liderNome", function(v){ state.liderNome = v; });
+
+    var tipoSel = document.getElementById("in-frotaTipo");
+    if(tipoSel){
+      tipoSel.addEventListener("change", function(){
+        state.wizard.frotaTipo = tipoSel.value;
+        state.wizard.checklist = {};
+        render();
+      });
+    }
+
+    var q = document.getElementById("in-consultaQ");
+    if(q){ q.addEventListener("input", function(){ state.consultaFilters.q = q.value; renderConsultaListOnly(); }); }
+    var ct = document.getElementById("in-consultaTipo");
+    if(ct){ ct.addEventListener("change", function(){ state.consultaFilters.tipo = ct.value; render(); }); }
+    var cs = document.getElementById("in-consultaStatus");
+    if(cs){ cs.addEventListener("change", function(){ state.consultaFilters.status = cs.value; render(); }); }
+
+    app.addEventListener("click", onClick);
+  }
+
+  function renderConsultaListOnly(){
+    // lightweight re-render for text search to avoid stealing input focus every keystroke
+    render();
+    var q2 = document.getElementById("in-consultaQ");
+    if(q2){ q2.focus(); var v=q2.value; q2.value=""; q2.value=v; }
+  }
+
+  function bindInput(id, setter){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("input", function(){ setter(el.value); });
+    el.addEventListener("blur", function(){
+      if(id==="in-mecNome") lsSet("af_mecNome", state.mecNome);
+      if(id==="in-mecMatricula") lsSet("af_mecMatricula", state.mecMatricula);
+      if(id==="in-liderNome") lsSet("af_liderNome", state.liderNome);
+    });
+  }
+
+  function onClick(e){
+    var t = e.target.closest("[data-action]");
+    if(!t) return;
+    var action = t.getAttribute("data-action");
+    state.error = null;
+
+    if(action==="pick-role"){
+      state.role = t.getAttribute("data-role");
+      lsSet("af_role", state.role);
+      state.route = state.role==="lider" ? "lider-home" : "mec-home";
+      render(); return;
+    }
+    if(action==="switch-role"){ state.role = null; state.route = "gate"; lsSet("af_role", null); render(); return; }
+    if(action==="cycle-theme"){ cycleTheme(); return; }
+    if(action==="nav-goto"){ state.route = t.getAttribute("data-route"); state.currentOsId=null; render(); return; }
+    if(action==="go-mec-home"){ state.route="mec-home"; state.currentOsId=null; render(); return; }
+    if(action==="go-lider-home"){ state.route="lider-home"; state.currentOsId=null; render(); return; }
+
+    if(action==="new-apontamento"){ state.wizard = freshWizard(); state.route = "mec-wizard"; render(); return; }
+    if(action==="wizard-back"){ state.wizard.step = Math.max(1, state.wizard.step-1); render(); return; }
+    if(action==="wizard-next"){
+      if(state.wizard.step===1){ lsSet("af_mecNome", state.mecNome); lsSet("af_mecMatricula", state.mecMatricula); }
+      if(state.wizard.step===2 && missingProblemPhotos(state.wizard).length>0){
+        state.error = "Anexe uma foto em cada item marcado como Problema antes de continuar.";
+        render(); return;
+      }
+      state.wizard.step = Math.min(4, state.wizard.step+1);
+      render(); return;
+    }
+    if(action==="wizard-submit"){ submitWizard(); return; }
+
+    if(action==="retake-photo"){
+      var kind = t.getAttribute("data-kind");
+      if(kind==="cracha") state.wizard.crachaAssetId = null; else state.wizard.equipamentoAssetId = null;
+      render(); return;
+    }
+    if(action==="retake-item-photo"){
+      var pItemId = t.getAttribute("data-item");
+      var pEntry = state.wizard.checklist[pItemId];
+      if(pEntry) pEntry.fotoAssetId = null;
+      render(); return;
+    }
+    if(action==="add-part"){ state.wizard.pecas.push({ id: uid(), nome:"", qtd:"1", obs:"" }); render(); return; }
+    if(action==="remove-part"){
+      var pid = t.getAttribute("data-id");
+      state.wizard.pecas = state.wizard.pecas.filter(function(p){ return p.id!==pid; });
+      render(); return;
+    }
+
+    if(action==="open-signature"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-signature"; render(); return; }
+    if(action==="open-apply"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-apply"; render(); return; }
+    if(action==="sig-clear"){ clearSignature(); return; }
+    if(action==="sig-confirm"){ confirmSignature(); return; }
+    if(action==="send-os-email"){
+      if(state.lastSubmittedOs){ openMailto(buildOsEmailMailto(state.lastSubmittedOs).mailto); }
+      return;
+    }
+    if(action==="copy-os-email"){
+      if(state.lastSubmittedOs){
+        var mail = buildOsEmailMailto(state.lastSubmittedOs);
+        copyToClipboard("Para: "+mail.to+"\nAssunto: "+mail.subject+"\n\n"+mail.body).then(function(ok){
+          var btn = document.getElementById("btn-copy-email");
+          if(btn){ btn.textContent = ok ? "✅ Copiado! Cole no seu e-mail" : "Não foi possível copiar"; }
+        });
+      }
+      return;
+    }
+    if(action==="apply-confirm"){ confirmApply(); return; }
+
+    if(action==="open-lider-os"){ state.currentOsId = t.getAttribute("data-id"); state.route = "lider-detail"; render(); return; }
+    if(action==="lider-tab"){ state.liderTab = t.getAttribute("data-tab"); render(); return; }
+    if(action==="lider-confirm-separacao"){ confirmSeparacao(); return; }
+
+    if(action==="open-consulta-os"){ state.consultaOsId = t.getAttribute("data-id"); state.route = "consulta-detail"; render(); return; }
+  }
+
+  /* ---------------------------------------------------------------
+   * Flows
+   * ------------------------------------------------------------- */
+  function missingProblemPhotos(w){
+    return Object.keys(w.checklist).filter(function(id){
+      var e = w.checklist[id];
+      return e && e.status==="problema" && !e.fotoAssetId;
+    });
+  }
+
+  function submitWizard(){
+    var w = state.wizard;
+    if(!state.mecNome || !state.mecMatricula || !w.frotaNumero){
+      state.error = "Preencha nome, matrícula e número da frota antes de enviar.";
+      state.wizard.step = 1; render(); return;
+    }
+    if(missingProblemPhotos(w).length>0){
+      state.error = "Anexe uma foto em cada item marcado como Problema antes de enviar.";
+      state.wizard.step = 2; render(); return;
+    }
+    var pecas = w.pecas.filter(function(p){ return p.nome.trim(); }).map(function(p){
+      return { id:p.id, nome:p.nome.trim(), qtd:p.qtd||"1", obs:p.obs||"", entregue:false, aplicada:false };
+    });
+    var data = {
+      osCode: genOsCode(), frotaTipo: w.frotaTipo, frotaNumero: w.frotaNumero.trim(),
+      mecanicoNome: state.mecNome.trim(), mecanicoMatricula: state.mecMatricula.trim(),
+      crachaAssetId: w.crachaAssetId || null, equipamentoAssetId: w.equipamentoAssetId || null,
+      horimetro: w.horimetro || "", dataServico: w.dataServico,
+      checklist: w.checklist, obsGeral: w.obsGeral || "", pecas: pecas,
+      status: pecas.length ? "pecas_pendentes" : "concluida",
+      liderNome: null, liderSepararEm: null, assinaturaAssetId: null, assinaturaEm: null
+    };
+    state.busy = true; render();
+    createOs(data).then(function(){
+      state.busy = false; state.wizard = null;
+      state.lastSubmittedOs = data;
+      state.route = "mec-submitted";
+      render();
+    }).catch(function(){
+      state.busy = false; state.error = "Não foi possível enviar o apontamento agora. Tente novamente.";
+      render();
+    });
+  }
+
+  function confirmSeparacao(){
+    var os = findOs(state.currentOsId);
+    if(!os) return;
+    var checks = app.querySelectorAll("[data-separar-id]");
+    var selected = {};
+    checks.forEach(function(c){ selected[c.getAttribute("data-separar-id")] = c.checked; });
+    var updated = (os.pecas||[]).map(function(p){ return Object.assign({}, p, { entregue: !!selected[p.id] }); });
+    if(!updated.some(function(p){ return p.entregue; })){
+      state.error = "Marque ao menos uma peça para liberar a entrega.";
+      render(); return;
+    }
+    var nome = (document.getElementById("in-liderNome")||{}).value || state.liderNome || "";
+    lsSet("af_liderNome", nome); state.liderNome = nome;
+    state.busy = true; render();
+    updateOs(os.id, { pecas: updated, status: "aguardando_assinatura", liderNome: nome, liderSepararEm: new Date().toISOString() })
+      .then(function(){ state.busy = false; state.route = "lider-home"; state.currentOsId = null; render(); })
+      .catch(function(){ state.busy = false; state.error = "Não foi possível salvar a separação agora."; render(); });
+  }
+
+  function confirmSignature(){
+    var os = findOs(state.currentOsId);
+    if(!os) return;
+    if(!state.sigHasStroke){ state.error = "Assine no campo indicado antes de confirmar."; render(); return; }
+    state.busy = true; render();
+    blobFromCanvas(sigCanvas).then(function(blob){ return uploadImage(blob); })
+      .then(function(assetId){
+        return updateOs(os.id, { assinaturaAssetId: assetId, assinaturaEm: new Date().toISOString(), status: "aguardando_aplicacao" });
+      })
+      .then(function(){ state.busy = false; state.route = "mec-home"; state.currentOsId = null; render(); })
+      .catch(function(){ state.busy = false; state.error = "Não foi possível salvar a assinatura agora."; render(); });
+  }
+
+  function confirmApply(){
+    var os = findOs(state.currentOsId);
+    if(!os) return;
+    var checks = app.querySelectorAll("[data-apply-id]");
+    var selected = {};
+    checks.forEach(function(c){ selected[c.getAttribute("data-apply-id")] = c.checked; });
+    var updated = (os.pecas||[]).map(function(p){ return p.entregue ? Object.assign({}, p, { aplicada: !!selected[p.id] }) : p; });
+    state.busy = true; render();
+    updateOs(os.id, { pecas: updated, status: "concluida", concluidaEm: new Date().toISOString() })
+      .then(function(){ state.busy = false; state.route = "mec-home"; state.currentOsId = null; render(); })
+      .catch(function(){ state.busy = false; state.error = "Não foi possível concluir a OS agora."; render(); });
+  }
+
+  /* ---------------------------------------------------------------
+   * Boot
+   * ------------------------------------------------------------- */
+  function bootFirebase(){
+    try{
+      firebase.initializeApp(FIREBASE_CONFIG);
+      var auth = firebase.auth();
+      auth.onAuthStateChanged(function(user){
+        if(user && !db){
+          db = firebase.firestore();
+          var storage = firebase.storage();
+          assetsApi = {
+            upload: function(blob){
+              var ext = (blob && blob.type && blob.type.indexOf("png")>-1) ? "png" : "jpg";
+              var path = "os_photos/" + Date.now() + "_" + uid() + "." + ext;
+              var ref = storage.ref().child(path);
+              return ref.put(blob, { contentType: (blob && blob.type) || "image/jpeg" })
+                .then(function(snap){ return snap.ref.getDownloadURL(); })
+                .then(function(url){ return { id: url }; });
+            }
+          };
+          subscribe();
+        }
+      });
+      auth.signInAnonymously().catch(function(err){
+        state.error = "Não foi possível conectar ao banco de dados (login): " + (err && err.message ? err.message : "");
+        render();
+      });
+    }catch(e){
+      state.error = "Não foi possível iniciar a conexão com o banco de dados.";
+      render();
+    }
+  }
+
+  function boot(){
+    applyTheme(state.theme);
+    if(state.role){ state.route = state.role==="lider" ? "lider-home" : "mec-home"; }
+    render();
+
+    if(window.claude && window.claude.use){
+      Promise.all([
+        window.claude.use("db").catch(function(){ return null; }),
+        window.claude.use("assets").catch(function(){ return null; })
+      ]).then(function(res){
+        db = res[0]; assetsApi = res[1];
+        if(!db){ state.error = "Sem conexão com o banco de dados nesta visualização — os dados ficam apenas nesta sessão."; }
+        subscribe();
+      });
+      return;
+    }
+
+    if(typeof firebase !== "undefined" && FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey){
+      bootFirebase();
+      return;
+    }
+
+    render();
+  }
+
+  var start = function(){ boot(); };
+  if(window.claude && window.claude.hot){
+    window.claude.hot.ready ? window.claude.hot.ready(start) : start();
+  } else {
+    start();
+  }
+})();
+</script>
+
+</body>
+</html>
