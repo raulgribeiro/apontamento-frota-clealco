@@ -1282,7 +1282,10 @@ function openMailto(url){
       '</div>'+
       '<div class="os-meta"><span>👤 '+escapeHtml(o.mecanicoNome)+'</span><span>⚙️ '+(o.pecas?o.pecas.length:0)+' peça(s)</span><span>🕓 '+fmtDate(o.dataServico)+'</span></div>'
     );
-    return '<button class="os-card" data-action="open-lider-os" data-id="'+o.id+'">'+body+'</button>';
+    var trashBtn = '<button type="button" class="os-trash-btn" data-action="delete-os" data-id="'+o.id+'" data-code="'+escapeHtml(o.osCode)+'" title="Excluir OS" aria-label="Excluir OS" style="position:absolute; top:10px; right:10px; width:30px; height:30px; border:none; background:transparent; color:var(--text-muted); font-size:16px; line-height:1; cursor:pointer; border-radius:8px; display:flex; align-items:center; justify-content:center; z-index:2;">\uD83D\uDDD1\uFE0F</button>';
+    return '<div class="os-card" style="position:relative; padding-right:38px;">'+trashBtn+
+      '<button class="os-card-inner" data-action="open-lider-os" data-id="'+o.id+'" style="all:unset; cursor:pointer; display:flex; flex-direction:column; gap:8px; width:100%; text-align:left;">'+body+'</button>'+
+    '</div>';
   }
 
   function viewLiderDetail(){
