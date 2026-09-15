@@ -760,6 +760,11 @@ function openMailto(url){
     if(o) Object.assign(o, patch);
     return Promise.resolve();
   }
+  function deleteOs(id){
+    if(db){ return db.doc("os/"+id).delete(); }
+    state.localOS = state.localOS.filter(function(o){ return o.id!==id; });
+    return Promise.resolve();
+  }
   function uploadImage(blob){
     if(!blob) return Promise.resolve(null);
     if(!assetsApi) return blobToDataUrl(blob);
@@ -994,8 +999,13 @@ function openMailto(url){
       '<div class="os-meta"><span>🕓 '+fmtDate(o.dataServico)+'</span><span>⚙️ '+(o.pecas?o.pecas.length:0)+' peça(s)</span></div>'+
       (actionLabel ? '<div style="font-size:13.5px; font-weight:700; color:'+(action?"var(--blue)":"var(--text-muted)")+'; margin-top:2px;">'+actionLabel+'</div>' : '')
     );
-    if(action){ return '<button class="os-card" data-action="'+action+'" data-id="'+o.id+'">'+body+'</button>'; }
-    return '<div class="os-card" style="cursor:default;">'+body+'</div>';
+    var trashBtn = '<button type="button" class="os-trash-btn" data-action="delete-os" data-id="'+o.id+'" data-code="'+escapeHtml(o.osCode)+'" title="Excluir OS" aria-label="Excluir OS" style="position:absolute; top:10px; right:10px; width:30px; height:30px; border:none; background:transparent; color:var(--text-muted); font-size:16px; line-height:1; cursor:pointer; border-radius:8px; display:flex; align-items:center; justify-content:center; z-index:2;">\uD83D\uDDD1\uFE0F</button>';
+    if(action){
+      return '<div class="os-card" style="position:relative; padding-right:38px;">'+trashBtn+
+        '<button class="os-card-inner" data-action="'+action+'" data-id="'+o.id+'" style="all:unset; cursor:pointer; display:flex; flex-direction:column; gap:8px; width:100%; text-align:left;">'+body+'</button>'+
+      '</div>';
+    }
+    return '<div class="os-card" style="cursor:default; position:relative; padding-right:38px;">'+trashBtn+body+'</div>';
   }
 
   function viewMecWizard(){
@@ -1663,6 +1673,19 @@ function openMailto(url){
     if(action==="lider-confirm-separacao"){ confirmSeparacao(); return; }
 
     if(action==="open-consulta-os"){ state.consultaOsId = t.getAttribute("data-id"); state.route = "consulta-detail"; render(); return; }
+    if(action==="delete-os"){
+      var delId = t.getAttribute("data-id");
+      var delCode = t.getAttribute("data-code") || "";
+      var ok = window.confirm("Excluir a OS "+delCode+" definitivamente?\n\nEssa ação não pode ser desfeita.");
+      if(!ok) return;
+      deleteOs(delId).then(function(){
+        if(!db){ render(); }
+      }).catch(function(err){
+        state.error = "Não foi possível excluir a OS. Tente novamente.";
+        render();
+      });
+      return;
+    }
   }
 
   /* ---------------------------------------------------------------
