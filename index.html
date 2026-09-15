@@ -361,6 +361,7 @@
   "use strict";
 
   var NOTIFY_EMAIL = "raul_gomes@clealco.com.br";
+var POWER_AUTOMATE_URL = "https://default1bb4b50656164cf6aa3cea87163f01.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/10/workflows/c2398db1f56449b0bc4b7a4a588e2a4e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=WGw34ePXRgZ3x6BP8xAkulNGu1EiizOkJIeCrHYxDIg";
 
   /* Configuração do projeto Firebase (apontamento-frota-clealco).
      Usado apenas quando o app roda fora do ambiente do Claude
@@ -562,7 +563,82 @@
       mailto: "mailto:" + NOTIFY_EMAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body)
     };
   }
-  function openMailto(url){
+  
+function blobUrlToBase64(url){
+return fetch(url).then(function(r){ return r.blob(); }).then(function(blob){
+return new Promise(function(resolve){
+var reader = new FileReader();
+reader.onload = function(){
+var res = reader.result || "";
+var comma = res.indexOf(",");
+resolve(comma>-1 ? res.slice(comma+1) : "");
+};
+reader.onerror = function(){ resolve(null); };
+reader.readAsDataURL(blob);
+});
+});
+}
+function buildItensComProblemaText(os){
+var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {};
+var lines = [];
+Object.keys(os.checklist||{}).forEach(function(k){
+var c = os.checklist[k];
+if(c && c.status==="problema"){
+var item = null;
+(tmpl.sections||[]).forEach(function(s){ s.items.forEach(function(it){ if(it.id===k) item=it; }); });
+lines.push(k + " " + (item?item.text:"") + (c.obs?(" — "+c.obs):""));
+}
+});
+return lines.join("; ");
+}
+function buildPecasSolicitadasText(os){
+return (os.pecas||[]).map(function(p){
+return p.nome + " (x" + (p.qtd||"1") + ")" + (p.obs?(" — "+p.obs):"");
+}).join("; ");
+}
+function notifyPowerAutomate(os){
+if(!POWER_AUTOMATE_URL) return;
+try{
+var photoJobs = [];
+if(os.crachaAssetId){ photoJobs.push({ nome: "cracha_" + os.osCode + ".jpg", url: assetUrl(os.crachaAssetId) }); }
+if(os.equipamentoAssetId){ photoJobs.push({ nome: "equipamento_" + os.osCode + ".jpg", url: assetUrl(os.equipamentoAssetId) }); }
+Object.keys(os.checklist||{}).forEach(function(k){
+var c = os.checklist[k];
+if(c && c.status==="problema" && c.fotoAssetId){
+photoJobs.push({ nome: "problema_" + k + "_" + os.osCode + ".jpg", url: assetUrl(c.fotoAssetId) });
+}
+});
+Promise.all(photoJobs.map(function(job){
+return blobUrlToBase64(job.url).then(function(b64){
+return b64 ? { nomeArquivo: job.nome, conteudoBase64: b64 } : null;
+}).catch(function(){ return null; });
+})).then(function(fotos){
+var payload = {
+osCode: os.osCode,
+frotaTipo: os.frotaTipo,
+frotaNumero: os.frotaNumero,
+mecanicoNome: os.mecanicoNome,
+mecanicoMatricula: os.mecanicoMatricula,
+horimetro: os.horimetro || "",
+dataServico: os.dataServico || "",
+itensComProblema: buildItensComProblemaText(os),
+pecasSolicitadas: buildPecasSolicitadasText(os),
+fotos: fotos.filter(Boolean)
+};
+return fetch(POWER_AUTOMATE_URL, {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify(payload)
+});
+}).catch(function(e){
+console.warn("Falha ao notificar Power Automate (nao bloqueia o app):", e);
+});
+}catch(e){
+console.warn("Falha ao preparar notificacao Power Automate:", e);
+}
+}
+
+function openMailto(url){
     // Opens in a new browsing context instead of navigating this page —
     // if no mail client is registered, only the new (blank) tab is affected.
     try{ window.open(url, "_blank"); }catch(e){}
@@ -1623,6 +1699,7 @@
     };
     state.busy = true; render();
     createOs(data).then(function(){
+notifyPowerAutomate(data);
       state.busy = false; state.wizard = null;
       state.lastSubmittedOs = data;
       state.route = "mec-submitted";
