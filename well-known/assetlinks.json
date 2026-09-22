@@ -1,8 +1,0 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "io.github.raulgribeiro.twa",
-    "sha256_cert_fingerprints": ["B6:AC:A4:DE:9C:0A:DE:73:AD:65:43:67:ED:6D:D0:F6:DC:D8:BB:4E:9A:46:D8:7D:7D:DC:37:37:8D:A6:D3:78"]
-  }
-}]
