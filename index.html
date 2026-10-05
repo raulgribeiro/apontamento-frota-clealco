@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#15803d">
+<meta name="theme-color" content="#EFAB2E">
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js");});}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
 <title>Apontamento de Frota — Manutenção Automotiva Clealco</title>
 <style>
   :root{
@@ -349,6 +349,116 @@
 
   a{ color:var(--blue); }
   ::selection{ background:var(--green-soft); }
+
+  /* ============ Material Design 3 · tema único âmbar Clealco ============ */
+  :root, :root[data-theme="light"]{
+    --md-p:#7A5900; --md-onp:#FFFFFF; --md-pc:#FFDEA3; --md-onpc:#261900; --md-amber:#EFAB2E; --md-onamber:#2A1D00;
+    --bg:#FFF8F1; --surface:#FBF2E6; --surface-2:#F5ECDF; --surface-3:#EFE6D9;
+    --border:#D8CCBA; --border-strong:#B8AC9B; --text:#1F1B14; --text-muted:#5F5648;
+    --green:#1B6C2F; --green-shadow:#1B6C2F; --green-soft:#B4F1B5;
+    --blue:#7A5900; --blue-shadow:#7A5900; --blue-soft:#FFDEA3;
+    --yellow:#EFAB2E; --yellow-shadow:#7A5900; --yellow-soft:#FFDCBE;
+    --red:#BA1A1A; --red-shadow:#BA1A1A; --red-soft:#FFDAD6;
+    --gray-soft:#E3DDD0; --shadow:rgba(0,0,0,.12);
+    --font-display:'Roboto','Segoe UI',system-ui,sans-serif; --font-body:'Roboto','Segoe UI',system-ui,sans-serif;
+  }
+  body{ background:var(--bg); font-size:15px; }
+  h1{ font-size:26px; font-weight:500; letter-spacing:0; } h2{ font-size:18px; font-weight:500; color:var(--md-p); } h3{ font-size:16px; font-weight:500; }
+  .eyebrow{ color:var(--md-p); font-weight:500; letter-spacing:.08em; }
+  /* topbar */
+  .topbar{ background:var(--md-amber); border:0; border-radius:0 0 28px 28px; color:var(--md-onamber); box-shadow:0 1px 4px rgba(0,0,0,.18); }
+  .topbar-inner{ padding:12px 16px 16px; }
+  .brand-mark{ width:40px; height:40px; border-radius:50%; padding:6px; border:0; box-shadow:none; background:#fff; }
+  .brand-title{ font-weight:500; font-size:18px; color:var(--md-onamber); }
+  .brand-sub{ color:rgba(42,29,0,.75); letter-spacing:.04em; }
+  .role-pill{ background:rgba(255,255,255,.4); color:var(--md-onamber); border:0; font-weight:500; text-transform:none; }
+  .role-pill:active{ background:rgba(255,255,255,.65); }
+  .theme-btn{ display:none !important; }
+  .brand-text{ overflow:hidden; } .brand-title{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .role-pill{ flex-shrink:0; } @media (max-width:480px){ .brand-sub{ display:none; } .brand-title{ font-size:16px; } .brand{ gap:8px; } .topbar-inner{ gap:6px; } }
+  /* cards */
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:none; }
+  .os-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:none; }
+  .os-frota{ font-weight:500; font-size:16px; } .os-code{ font-family:var(--font-body); }
+  .os-av{ width:42px; height:42px; border-radius:50%; background:var(--md-pc); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .os-top .os-id{ display:flex; gap:12px; align-items:center; min-width:0; }
+  .kpi{ background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  .kpi-num{ font-weight:500; font-size:24px; } .kpi.yellow .kpi-num{ color:var(--md-p); }
+  .kpi-label{ font-weight:500; text-transform:none; letter-spacing:0; font-size:12px; }
+  /* buttons */
+  .btn{ border-radius:24px; min-height:48px; padding:12px 24px; font-weight:500; letter-spacing:.01em; box-shadow:none !important; transform:none !important; }
+  .btn-primary{ background:var(--md-p); color:#fff; }
+  .btn-primary:active{ filter:brightness(1.15); }
+  .btn-primary:disabled{ opacity:.38; }
+  .btn-secondary{ background:var(--md-pc); color:var(--md-onpc); }
+  .btn-blue{ background:var(--md-p); color:#fff; }
+  .btn-ghost{ background:transparent; color:var(--md-p); min-height:40px; padding:8px 12px; }
+  .btn-danger-ghost{ color:var(--red); min-height:40px; }
+  .btn-sm{ min-height:36px; padding:8px 16px; border-radius:18px; }
+  /* FAB estendido */
+  .btn-primary.btn-block[data-action="new-apontamento"]{
+    position:fixed; right:16px; bottom:calc(88px + env(safe-area-inset-bottom)); width:auto; z-index:22;
+    background:var(--md-pc); color:var(--md-onpc); border-radius:16px; min-height:56px; padding:0 22px !important;
+    box-shadow:0 3px 8px rgba(0,0,0,.3) !important;
+  }
+  @media (min-width:860px){ .btn-primary.btn-block[data-action="new-apontamento"]{ bottom:28px; right:28px; } }
+  /* inputs */
+  input[type="text"], input[type="number"], input[type="date"], select, textarea{
+    background:var(--bg); border:1px solid var(--border-strong); border-radius:8px; font-weight:400; padding:13px 14px;
+  }
+  input:focus, select:focus, textarea:focus{ border:2px solid var(--md-p); padding:12px 13px; background:var(--bg); }
+  label.field-label{ font-weight:500; font-size:12.5px; color:var(--md-p); letter-spacing:.02em; }
+  /* banners */
+  .banner{ border:0; border-radius:12px; font-weight:500; }
+  .banner-warn{ background:var(--yellow-soft); color:#6B4200; }
+  .banner-ok{ background:var(--green-soft); color:#0B3A17; }
+  .banner-danger{ background:var(--red-soft); color:#8C0009; }
+  /* pills = assist chips */
+  .pill{ border-radius:8px; text-transform:none; font-weight:500; letter-spacing:0; font-size:12px; padding:5px 10px; }
+  .pill-yellow{ background:var(--yellow-soft); color:#6B4200; }
+  .pill-blue{ background:var(--md-pc); color:var(--md-onpc); }
+  .pill-green{ background:var(--green-soft); color:var(--green); }
+  .pill-red{ background:var(--red-soft); color:var(--red); } .pill-gray{ background:var(--gray-soft); color:var(--text-muted); }
+  /* stepper */
+  .step-dot{ height:4px; background:var(--surface-3); } .step-dot.done{ background:var(--md-p); } .step-dot.current{ background:var(--md-amber); }
+  .step-label{ color:var(--md-p); font-weight:500; }
+  /* checklist */
+  .checklist-section-title{ color:var(--md-p); font-weight:500; border-bottom:1px solid var(--border); font-size:15px; }
+  .checklist-item{ border-bottom:1px solid var(--border); padding:12px 0; }
+  .checklist-item-text{ font-weight:400; font-size:15px; display:flex; gap:10px; align-items:flex-start; }
+  .checklist-item-num{ flex:none; min-width:30px; height:26px; padding:0 6px; border-radius:13px; background:var(--surface-3); color:var(--text); display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-body); font-size:12px; font-weight:500; margin-right:0; }
+  .segmented{ border:1px solid var(--border-strong); border-radius:20px; background:transparent; }
+  .segmented button{ background:transparent; color:var(--text); font-weight:500; padding:10px 4px; border-right:1px solid var(--border-strong); font-size:13px; }
+  .segmented button.active[data-val="ok"]{ background:var(--green-soft); color:var(--green); }
+  .segmented button.active[data-val="problema"]{ background:var(--red-soft); color:var(--red); }
+  .segmented button.active[data-val="na"]{ background:var(--gray-soft); color:var(--text); }
+  .photo-box{ border:1.5px dashed var(--border-strong); border-radius:12px; background:var(--bg); }
+  .photo-box.item-photo.missing{ border-color:var(--red); background:var(--red-soft); }
+  canvas.sig-pad{ border:1.5px dashed var(--border-strong); background:var(--bg); border-radius:12px; }
+  /* gate */
+  .role-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:none; }
+  .role-card:active{ transform:none; background:var(--surface-3); }
+  .role-icon{ border-radius:50%; background:var(--md-pc) !important; color:var(--md-onpc); }
+  /* tabs */
+  .tabs{ background:var(--surface-2); border-radius:20px; }
+  .tab-btn{ border-radius:16px; font-weight:500; } .tab-btn.active{ background:var(--md-pc); color:var(--md-onpc); box-shadow:none; }
+  /* navegação */
+  .sidenav{ background:var(--surface-2); border-right:0; }
+  .sidenav-mark{ border:0; box-shadow:none; border-radius:50%; }
+  .nav-item{ border:0; border-radius:28px; font-weight:500; color:var(--text-muted); }
+  .nav-item .nav-ico{ background:transparent; width:auto; height:auto; font-size:18px; }
+  .nav-item.active{ background:var(--md-pc); color:var(--md-onpc); border:0; }
+  .nav-item.active .nav-ico{ background:transparent; color:inherit; }
+  .bottomnav{ background:var(--surface-2); border:0; padding:10px 8px calc(12px + env(safe-area-inset-bottom)); }
+  .bottomnav .nav-item{ background:none; font-size:12px; gap:4px; border-radius:16px; padding:0; }
+  .bottomnav .nav-item .nav-ico{ width:64px; height:32px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:transparent; }
+  .bottomnav .nav-item.active{ background:none; color:var(--text); }
+  .bottomnav .nav-item.active .nav-ico{ background:var(--md-pc); color:var(--md-onpc); }
+  .sidenav-footer{ border-top:1px solid var(--border); }
+  .action-bar{ background:var(--surface-2); border:0; box-shadow:0 -2px 6px rgba(0,0,0,.1); }
+  .part-row, .checkbox-row{ border-bottom:1px solid var(--border); }
+  .checkbox-row input[type="checkbox"]{ accent-color:var(--md-p); }
+  .empty-state{ font-weight:500; }
+  a{ color:var(--md-p); } ::selection{ background:var(--md-pc); }
 </style>
 
 </head>
@@ -904,7 +1014,6 @@ function openMailto(url){
         '<div class="sidenav-footer">'+
           '<div style="padding:8px 12px 4px;"><p class="eyebrow" style="margin-bottom:2px;">'+(state.role==="lider"?"Líder":"Mecânico")+'</p>'+
           '<p style="font-weight:700; font-size:14px;">'+escapeHtml(state.role==="lider" ? (state.liderNome||"—") : (state.mecNome||"—"))+'</p></div>'+
-          '<button class="nav-item" data-action="cycle-theme"><span class="nav-ico">'+THEME_META[state.theme].icon+'</span><span>Tema: '+THEME_META[state.theme].label+'</span></button>'+
           '<button class="nav-item" data-action="switch-role"><span class="nav-ico">🔁</span><span>Trocar perfil</span></button>'+
         '</div>'+
       '</nav>'
@@ -962,8 +1071,7 @@ function openMailto(url){
             '<div class="brand-sub">Manutenção Automotiva · Clealco</div>'+
           '</div>'+
         '</div>'+
-        '<button class="theme-btn" data-action="cycle-theme" title="Alternar tema: '+THEME_META[state.theme].label+'">'+THEME_META[state.theme].icon+'</button>'+
-        (roleLabel ? '<button class="role-pill" data-action="switch-role">'+roleLabel+' · trocar</button>' : '')+
+        (roleLabel ? '<button class="role-pill" data-action="switch-role" title="Trocar perfil">'+roleLabel+' \u21C4</button>' : '')+
       '</div></div>'
     );
   }
@@ -1077,8 +1185,8 @@ function openMailto(url){
     var tmpl = CHECKLIST_TEMPLATES[o.frotaTipo] || {label:o.frotaTipo};
     var body = (
       '<div class="os-top">'+
-        '<div><div class="os-frota">'+escapeHtml(tmpl.label)+' '+escapeHtml(o.frotaNumero)+'</div>'+
-        '<div class="os-code">'+escapeHtml(o.osCode)+'</div></div>'+
+        '<div class="os-id"><div class="os-av">'+(({COLHEDORA:"\u2699\uFE0F",TRATOR:"\uD83D\uDE9C",GRUNNER:"\uD83D\uDE9B",CAMINHAO:"\uD83D\uDE9A",PULVERIZADOR:"\uD83D\uDCA7"})[o.frotaTipo]||"\uD83D\uDD27")+'</div><div><div class="os-frota">'+escapeHtml(tmpl.label)+' '+escapeHtml(o.frotaNumero)+'</div>'+
+        '<div class="os-code">'+escapeHtml(o.osCode)+'</div></div></div>'+
         '<span class="pill '+(STATUS_PILL_CLASS[o.status]||"pill-gray")+'">'+(STATUS_LABEL[o.status]||o.status)+'</span>'+
       '</div>'+
       '<div class="os-meta"><span>🕓 '+fmtDate(o.dataServico)+'</span><span>⚙️ '+(o.pecas?o.pecas.length:0)+' peça(s)</span></div>'+
@@ -1184,8 +1292,8 @@ function openMailto(url){
           '<div class="checklist-item">'+
             '<div class="checklist-item-head"><div class="checklist-item-text"><span class="checklist-item-num">'+item.id+'</span>'+escapeHtml(item.text)+'</div></div>'+
             '<div class="segmented" data-item="'+item.id+'">'+
-              '<button type="button" data-val="ok" class="'+(val==="ok"?"active":"")+'">OK</button>'+
-              '<button type="button" data-val="problema" class="'+(val==="problema"?"active":"")+'">Problema</button>'+
+              '<button type="button" data-val="ok" class="'+(val==="ok"?"active":"")+'">\u2713 Conforme</button>'+
+              '<button type="button" data-val="problema" class="'+(val==="problema"?"active":"")+'">\u2715 Problema</button>'+
               '<button type="button" data-val="na" class="'+(val==="na"?"active":"")+'">N/A</button>'+
             '</div>'+
             (val==="problema" ? '<textarea placeholder="Descreva o problema encontrado…" data-obs="'+item.id+'" style="margin-top:8px;">'+escapeHtml(obs)+'</textarea>' : '')+
@@ -1901,7 +2009,7 @@ notifyPowerAutomate(data);
   }
 
   function boot(){
-    applyTheme(state.theme);
+    applyTheme("light");
     if(state.role){ state.route = state.role==="lider" ? "lider-home" : "mec-home"; }
     render();
 
