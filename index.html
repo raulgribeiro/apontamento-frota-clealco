@@ -390,50 +390,132 @@ var POWER_AUTOMATE_URL = "https://default1bb4b50656164cf6aa3cea87163f01.69.envir
       label: "Colhedora",
       sections: [
         { title: "1. Sistema do Picador", items: [
-          { id:"1.1", text:"Verificar vazamento na caixa do picador e junta da tampa" },
-          { id:"1.2", text:"Verificar nível de óleo da caixa do picador" },
+          { id:"1.1", text:"Verificar vazamento na caixa do picador e junta da tampa sincronismo", fotoRecomendada:true },
+          { id:"1.2", text:"Verificar nivel de óleo da caixa do picador" },
           { id:"1.3", text:"Verificar folga no volante do picador" }
         ]},
         { title: "2. Sistema do Elevador", items: [
-          { id:"2.1", text:"Verificar tensionamento da esteira" },
-          { id:"2.2", text:"Verificar regulagem e desgaste das engrenagens" },
-          { id:"2.3", text:"Verificar mangueira e conexões hidráulicas" },
+          { id:"2.1", text:"Realizar tensionamento da esteira - (25 mm)", fotoRecomendada:true },
+          { id:"2.2", text:"Verificar regulagem e desgaste das engrenagem" },
+          { id:"2.3", text:"Verificar mangueiras e conexões hidráulicas - (presença de vazamentos)" },
           { id:"2.4", text:"Verificar cabos e roldana do giro do elevador" }
         ]},
-        { title: "3. Sistema de Divisor de Linha", items: [
-          { id:"3.1", text:"Verificar sapatas L.D. e L.E. / revestimento de facões" },
-          { id:"3.2", text:"Verificar pistões e mangueiras hidráulicas (manter padrão e posicionamento correto)" },
-          { id:"3.3", text:"Verificar folga no rolamento dos pirulitos e nos facões lateral" }
+        { title: "3. Sistema Divisor de Linha", items: [
+          { id:"3.1", text:"Verificar sapatas L.D. e L.E.  e avaliar trincas e fixação" },
+          { id:"3.2", text:"Verificar fixação dos braços do pirulito externo (presença de trincas)", fotoRecomendada:true },
+          { id:"3.3", text:"Verificar pistões e mangueiras hidráulicas (manter o padrão e posicionamento correto das mangueiras)" },
+          { id:"3.4", text:"Verificar folga no rolamento dos pirulitos e os facões lateral" }
         ]},
         { title: "4. Mesa do Giro do Elevador", items: [
           { id:"4.1", text:"Verificar trinca na mesa" },
-          { id:"4.2", text:"Verificar cilindro hidráulico do giro" },
-          { id:"4.3", text:"Verificar fixação dos parafusos dos pinos da mesa" },
-          { id:"4.4", text:"Verificar aperto dos parafusos do tijolinho (verificar torque)" }
+          { id:"4.2", text:"Verificar cilindro hidráulico do giro (observar olhal da haste do cilindro)", fotoRecomendada:true },
+          { id:"4.3", text:"Verificar fixação dos parafusos dos pinos da mesa - (bolachão)", fotoRecomendada:true },
+          { id:"4.4", text:"Verificar aperto dos parafusos do tijolinho" }
         ]},
         { title: "5. Sistema de Rodante", items: [
-          { id:"5.1", text:"Verificar tensão da esteira L.D. e L.E. (utilizar gabarito padrão do rodante)" },
-          { id:"5.2", text:"Retirar ar dos cubos redutores L.D. e L.E." },
+          { id:"5.1", text:"Realizar tensionamento das esteiras no L.D. e L.E. (utilizar gabatiro padrão do rodante)", fotoRecomendada:true },
+          { id:"5.2", text:"Retirar ar dos cubos redutores L.D e L.E" },
           { id:"5.3", text:"Verificar mangueiras do motor de roda e vazamento do motor de roda e cubo" },
-          { id:"5.4", text:"Verificar condição da roda motriz L.D. e L.E." },
-          { id:"5.5", text:"Verificar cilindro e mangueira da suspensão L.D. e L.E." },
-          { id:"5.6", text:"Verificar skates, roletes e parafusos dos roletes" }
+          { id:"5.4", text:"Verificar cilindro e mangueira da supensão L.D. e L.E.", fotoRecomendada:true },
+          { id:"5.5", text:"Verificar skates, roletes e parafusos dos roletes - (internos e externo)", fotoRecomendada:true },
+          { id:"5.6", text:"Verificar condição do aro motriz L.D. e L.E. e fixação dos parafusos da mão de amigo" }
         ]},
         { title: "6. Trem de Rolo", items: [
-          { id:"6.1", text:"Verificar condições dos mancais e rolamento L.D. e L.E." },
+          { id:"6.1", text:"Verificar condições dos mancais e rolamentos L.D. e L.E.", fotoRecomendada:true },
           { id:"6.2", text:"Verificar batentes de borracha e arruelas dos rolos" },
-          { id:"6.3", text:"Verificar mangueiras e conexões" }
+          { id:"6.3", text:"Verificar mangueiras e conexões" },
+          { id:"6.4", text:"Verificar fixação dos motores charlyn" }
         ]},
         { title: "7. Sistema de Corte de Base", items: [
-          { id:"7.1", text:"Verificar nível da caixa e mangueiras hidráulicas" },
+          { id:"7.1", text:"Verificar o nivel da caixa e mangueiras hidráulicas (vazamentos, pontos de atrito e tramas expostas)" },
           { id:"7.2", text:"Verificar aletas da canela L.D. e L.E." },
           { id:"7.3", text:"Verificar discos L.D. e L.E. e chapa guia" }
         ]},
         { title: "8. Extrator Primário e Secundário", items: [
           { id:"8.1", text:"Verificar capuz e pás primário e secundário" },
           { id:"8.2", text:"Verificar corrente de giro do capô" },
-          { id:"8.3", text:"Verificar estrutura" },
-          { id:"8.4", text:"Verificar mangueiras e conexões hidráulicas" }
+          { id:"8.3", text:"Verificar estrutura e aletas do anel interno - (presença de trincas)" },
+          { id:"8.4", text:"Verificar mangueiras e conexões hidráulicas" },
+          { id:"8.5", text:"Verificar folga no cubo do primário" }
+        ]},
+        { title: "9. Sistema do Despontador", items: [
+          { id:"9.1", text:"Verificar folgas no tambor central" },
+          { id:"9.2", text:"Verificar trincas no mastro central do despontador (defeito normalmente encontrado na base de fixação do mastro)", fotoRecomendada:true },
+          { id:"9.3", text:"Verificar vazamento no cilindro hidráulico" },
+          { id:"9.4", text:"Verificar fixação dos parafusos das faquinhas" }
+        ]}
+      ]
+    },
+    TRATOR: {
+      label: "Trator",
+      sections: [
+        { title: "1. Segurança e Inspeção Visual", items: [
+          { id:"1", text:"Imobilizar o trator (freio de estacionamento, calços, motor desligado) e fazer inspeção visual 360° — Sem vazamentos de óleo, combustível ou água no chão e no equipamento; sem componentes soltos, trincados ou danificados" }
+        ]},
+        { title: "2. Níveis e Fluidos", items: [
+          { id:"2", text:"Óleo do motor — Nível entre as marcas da vareta; aspecto sem emulsão (água) ou diluição por combustível" },
+          { id:"3", text:"Líquido de arrefecimento — Nível no reservatório com motor frio; mangueiras e abraçadeiras sem ressecamento ou vazamento" },
+          { id:"4", text:"Óleo hidráulico / transmissão — Nível deve estar conforme determinado no visor; sem aspecto leitoso ou espumado; registrar reposição (controle de consumo)" },
+          { id:"5", text:"Combustível — Avaliar estrutura do tanque, verificar a existência de vazamentos, drenar a água do separador / pré-filtro" }
+        ]},
+        { title: "3. Ar, Arrefecimento e Prevenção de Incêndio", items: [
+          { id:"6", text:"Filtro de ar do motor — Avaliar condição da caixa do filtro, mangueiras de admissão e abraçadeiras" },
+          { id:"7", text:"Limpeza das colmeias com ar comprimido — Radiador, intercooler e condensador do A/C limpos, no sentido contrário ao fluxo de ar; sem aletas amassadas" },
+          { id:"8", text:"Remoção de palha e bagaço acumulados — Cofre do motor, turbo, coletor/escapamento, alternador, bateria e chicotes livres de resíduo combustível" }
+        ]},
+        { title: "4. Lubrificação", items: [
+          { id:"9", text:"Engraxar os pontos diários — Pivôs e pinos mestres do eixo dianteiro, terminais e cilindros de direção, cruzetas do eixo cardan, engate; verificar folgas ao engraxar" }
+        ]},
+        { title: "5. Rodados e Freios", items: [
+          { id:"10", text:"Pneus e rodas — Realizar inspeção visual nos pneus, devem estar sem cortes ou bolhas, verificar condição dos parafusos e porcas das rodas" },
+          { id:"11", text:"Sistema pneumático / freios (se equipado) — Drenar reservatórios de ar; mangueiras e engates rápidos sem vazamento audível; freio de estacionamento retém" }
+        ]},
+        { title: "6. Engate e Hidráulico", items: [
+          { id:"12", text:"Barra de tração, pino bola e remotos hidráulicos — Pino bola e barra de tração íntegros; mangueiras e engates rápidos sem vazamentos ou danos; presença de todos os parafusos na estrutura de fixação da barra de tração, proteção da TDP no lugar" }
+        ]},
+        { title: "7. Cabine e Elétrica", items: [
+          { id:"13", text:"Itens de segurança e sinalização — Faróis, setas, alarme de ré e buzina funcionando; cinto, escadas e degraus; porta, janela traseira e para-brisas bem fixados e livres de atritos com a estrutura. Verificar perfeito funcionamento do ar condicionado" }
+        ]},
+        { title: "8. Teste Funcional e Apontamento", items: [
+          { id:"14", text:"Partida e teste funcional — Painel sem alertas; pressão de óleo e temperatura normais; direção e freios respondendo" },
+          { id:"15", text:"Registro da parada — Horímetro, reposições de óleo/fluido e anomalias apontadas; abrir O.S. para pendências" }
+        ]}
+      ]
+    },
+    GRUNNER: {
+      label: "Grunner (Transbordo)",
+      sections: [
+        { title: "1. Engraxar / Lubrificar", items: [
+          { id:"1", text:"Engraxar todos os pontos de lubrificação. (Equipamento e Implemento)" }
+        ]},
+        { title: "2. Lavar / Limpar", items: [
+          { id:"2", text:"Limpar com ar comprimido trocadores de calor, Intercooler, câmbio, direção e condensadora do ar-condicionado e região do alternador" }
+        ]},
+        { title: "3. Revisar", items: [
+          { id:"3", text:"Verificar a integridade e a fixação das telas e mantas de proteção das partes quentes do equipamento" },
+          { id:"4", text:"Remover o pó da válvula de descarga do filtro de ar. (Pipeta do filtro de ar)" },
+          { id:"5", text:"Drenar a água acumulada no pré-filtro de combustível" }
+        ]},
+        { title: "4. Verificar / Testar", items: [
+          { id:"6", text:"Verificar a pressão do sistema pneumático (painel)" },
+          { id:"7", text:"Verificar o estado e comprovar o funcionamento dos cintos de segurança" },
+          { id:"8", text:"Verificar a presença de vazamentos (líquido de arrefecimento, óleo, pneumática, fluidos e combustível)" },
+          { id:"9", text:"Calibrar pneus e verificar vazamentos nos mesmos" },
+          { id:"10", text:"Verificar se as mangueiras hidráulicas estão acomodadas, evitando desgastes prematuros por atrito" },
+          { id:"11", text:"Verificar nível de óleo hidráulico do reservatório. (Óleo HD SAE 68 – 180 litros)" },
+          { id:"12", text:"Verificar o sistema de ar condicionado, tubulações, mangueiras, condensadora e evaporadora" },
+          { id:"13", text:"Verificar o nível de fluido da direção hidráulica" },
+          { id:"14", text:"Verificar o nível de fluido do sistema de acionamento da embreagem" },
+          { id:"15", text:"Verificar a integridade da bolsa de ar (suspensão)" }
+        ]},
+        { title: "5. Reapertar", items: [
+          { id:"16", text:"Verificar reaperto dos prolongadores de roda M16. (350 Nm)" },
+          { id:"17", text:"Realizar reaperto dos parafusos de fixação dos grampos do primeiro e segundo eixo direcional – M20. (600 Nm)" },
+          { id:"18", text:"Realizar reaperto dos parafusos de fixação dos jumelos – M24. (700 Nm)" }
+        ]},
+        { title: "6. Verificar / Testar", items: [
+          { id:"19", text:"Verificar o aperto das porcas e parafusos da barra estabilizadora – 16x1,5 (230 Nm) e M12x1,5 (100 Nm)" },
+          { id:"20", text:"Verificar os cilindros do transbordo quanto a empenamento e vazamento" }
         ]}
       ]
     }
@@ -453,11 +535,11 @@ var POWER_AUTOMATE_URL = "https://default1bb4b50656164cf6aa3cea87163f01.69.envir
       { id:"g3.2", text:"Verificar mangueiras e vazamentos hidráulicos" }
     ]}
   ];
-  ["TRATOR","CAMINHAO","PULVERIZADOR"].forEach(function(k){
-    var labels = { TRATOR:"Trator", CAMINHAO:"Caminhão", PULVERIZADOR:"Pulverizador" };
+  ["CAMINHAO","PULVERIZADOR"].forEach(function(k){
+    var labels = { CAMINHAO:"Caminhão", PULVERIZADOR:"Pulverizador" };
     CHECKLIST_TEMPLATES[k] = { label: labels[k], sections: GENERIC_SECTIONS, generic:true };
   });
-  var FROTA_TIPOS = ["COLHEDORA","TRATOR","CAMINHAO","PULVERIZADOR"];
+  var FROTA_TIPOS = ["COLHEDORA","TRATOR","GRUNNER","CAMINHAO","PULVERIZADOR"];
 
   var STATUS_LABEL = {
     pecas_pendentes: "Aguardando separação",
