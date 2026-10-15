@@ -288,6 +288,15 @@
 
   .part-row{ display:flex; gap:8px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--border); }
   .part-row:last-child{ border-bottom:none; }
+  .part-photo{ width:44px; height:44px; flex:none; margin-top:20px; border-radius:12px; border:2px dashed var(--border-strong); background:var(--surface-2); display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer; font-size:20px; }
+  .part-photo.filled{ border-style:solid; border-color:var(--md-p); }
+  .part-photo img{ width:100%; height:100%; object-fit:cover; }
+  .part-thumb{ width:56px; height:56px; flex:none; object-fit:cover; border-radius:12px; border:1px solid var(--border); }
+  .gestor-seg button.active{ background:var(--green-soft); color:var(--green); }
+  .gestor-seg button.active.nao{ background:var(--red-soft); color:var(--red); }
+  .ms-ico{ font-size:15px; }
+  .part-row .field{ min-width:0; }
+  .photo-box.item-photo .photo-caption{ color:var(--on-sv); }
   .part-row .field{ flex:1; }
   .part-remove{ background:none; border:none; color:var(--red); font-size:22px; line-height:1; padding:8px 4px; margin-top:4px; font-weight:700; }
 
@@ -897,10 +906,11 @@ function openMailto(url){
     sigHasStroke: false
   };
 
+  var FRENTES_LIST = ["11", "12", "13", "14", "21", "22", "23", "24", "25"];
   function freshWizard(){
     return {
       step: 1, frotaTipo: "COLHEDORA", frotaNumero: "",
-      equipamentoAssetId: null, crachaAssetId: null,
+      equipamentoAssetId: null, crachaAssetId: null, frente: "", gestorDeixou: "", gestorNome: "",
       horimetro: "", dataServico: todayISO(),
       checklist: {}, obsGeral: "",
       pecas: [{ id: uid(), nome:"", qtd:"1", obs:"" }]
@@ -1076,12 +1086,21 @@ function openMailto(url){
     );
   }
 
+  function wizardNextDisabled(w){
+    if(w.step!==1) return false;
+    return !w.frotaNumero || !w.frente || !w.gestorDeixou || (w.gestorDeixou==="nao" && !(w.gestorNome||"").trim()) || !state.mecNome || !state.mecMatricula;
+  }
+  function refreshNextBtn(){
+    var btn = app.querySelector('[data-action="wizard-next"]');
+    if(btn && state.wizard) btn.disabled = wizardNextDisabled(state.wizard);
+  }
+
   function renderActionBar(){
     if(state.route==="mec-wizard"){
       var w = state.wizard;
       var isLast = w.step===4;
       var nextDisabled = false;
-      if(w.step===1 && (!w.frotaNumero || !state.mecNome || !state.mecMatricula)) nextDisabled = true;
+      nextDisabled = wizardNextDisabled(w);
       return (
         '<div class="action-bar"><div class="action-bar-inner">'+
           (w.step>1 ? '<button class="btn btn-secondary" data-action="wizard-back">Voltar</button>' : '<button class="btn btn-secondary" data-action="go-mec-home">Cancelar</button>')+
@@ -1229,7 +1248,6 @@ function openMailto(url){
           '<div class="field"><label class="field-label">Matrícula</label>'+
             '<input type="text" id="in-mecMatricula" class="mono" value="'+escapeHtml(state.mecMatricula)+'" placeholder="Ex.: 4521" autocomplete="off">'+
           '</div>'+
-          '<div class="field"><label class="field-label">Foto do crachá (opcional)</label>'+ renderPhotoBox("cracha", w.crachaAssetId)+'</div>'+
         '</div>'+
         '<div class="card stack">'+
           '<h3>Equipamento</h3>'+
@@ -1237,7 +1255,23 @@ function openMailto(url){
             '<div class="field"><label class="field-label">Frota (tipo)</label><select id="in-frotaTipo">'+opts+'</select></div>'+
             '<div class="field"><label class="field-label">Número da frota</label><input type="text" id="in-frotaNumero" class="mono" value="'+escapeHtml(w.frotaNumero)+'" placeholder="Ex.: CH-104"></div>'+
           '</div>'+
+          '<div class="field"><label class="field-label">Frente</label><select id="in-frente"><option value="">Selecione a frente…</option>'+
+            FRENTES_LIST.map(function(f){ return '<option value="Frente '+f+'" '+(w.frente==="Frente "+f?"selected":"")+'>Frente '+f+'</option>'; }).join("")+
+          '</select></div>'+
           '<div class="field"><label class="field-label">Foto do equipamento</label>'+ renderPhotoBox("equipamento", w.equipamentoAssetId)+'</div>'+
+        '</div>'+
+        '<div class="card stack">'+
+          '<h3>Máquina</h3>'+
+          '<div class="field"><label class="field-label">O gestor deixou a máquina parar?</label>'+
+            '<div class="segmented gestor-seg">'+
+              '<button type="button" data-action="set-gestor" data-val="sim" class="'+(w.gestorDeixou==="sim"?"active":"")+'"><span class="ms-ico">✓</span> Sim</button>'+
+              '<button type="button" data-action="set-gestor" data-val="nao" class="nao '+(w.gestorDeixou==="nao"?"active":"")+'"><span class="ms-ico">✕</span> Não</button>'+
+            '</div>'+
+          '</div>'+
+          (w.gestorDeixou==="nao" ?
+            '<div class="banner banner-warn">Como a máquina não foi liberada pelo gestor, o checklist e as peças serão pulados. A OS vai direto para o envio.</div>'+
+            '<div class="field"><label class="field-label">Nome do gestor que não deixou parar</label><input type="text" id="in-gestorNome" value="'+escapeHtml(w.gestorNome)+'" placeholder="Nome completo do gestor"></div>'
+          : '')+
         '</div>'+
       '</div>'
     );
@@ -1263,7 +1297,7 @@ function openMailto(url){
     return (
       '<label class="photo-box item-photo '+(url?"filled":"")+' '+(missing?"missing":"")+'" style="min-height:96px; margin-top:8px;">'+
         (url ? '<img src="'+url+'" alt="foto do problema">' : '')+
-        '<span class="photo-caption">📷 Foto obrigatória do problema<br><span style="font-size:11.5px; font-weight:600;">tirar foto ou escolher da galeria</span></span>'+
+        '<span class="photo-caption">📷 Foto do problema (opcional)<br><span style="font-size:11.5px; font-weight:600;">tirar foto ou escolher da galeria</span></span>'+
         '<input type="file" accept="image/*" style="display:none" data-photo-input="problema:'+itemId+'">'+
         (url ? '<button type="button" class="photo-retake" data-action="retake-item-photo" data-item="'+itemId+'">Refazer</button>' : '')+
       '</label>'
@@ -1287,7 +1321,7 @@ function openMailto(url){
         var entry = w.checklist[item.id]||{};
         var val = entry.status || "";
         var obs = entry.obs || "";
-        var missingPhoto = val==="problema" && !entry.fotoAssetId;
+        var missingPhoto = false;
         html += (
           '<div class="checklist-item">'+
             '<div class="checklist-item-head"><div class="checklist-item-text"><span class="checklist-item-num">'+item.id+'</span>'+escapeHtml(item.text)+'</div></div>'+
@@ -1298,7 +1332,6 @@ function openMailto(url){
             '</div>'+
             (val==="problema" ? '<textarea placeholder="Descreva o problema encontrado…" data-obs="'+item.id+'" style="margin-top:8px;">'+escapeHtml(obs)+'</textarea>' : '')+
             (val==="problema" ? renderItemPhotoBox(item.id, entry.fotoAssetId, missingPhoto) : '')+
-            (missingPhoto ? '<div class="muted" style="color:var(--red); font-size:12px; font-weight:700; margin-top:5px;">⚠️ Anexe uma foto para continuar</div>' : '')+
           '</div>'
         );
       });
@@ -1311,6 +1344,14 @@ function openMailto(url){
     return html;
   }
 
+  function renderPartPhoto(p){
+    var url = p.fotoAssetId ? assetUrl(p.fotoAssetId) : null;
+    return '<label class="part-photo'+(url?" filled":"")+'" title="Foto da peça (opcional)">'+
+      (url ? '<img src="'+url+'" alt="foto da peça">' : '<span class="ms-ico">📷</span>')+
+      '<input type="file" accept="image/*" style="display:none" data-photo-input="peca:'+p.id+'">'+
+    '</label>';
+  }
+
   function stepPecas(w){
     var html = '<div class="stack">';
     html += '<div class="banner banner-ok">Liste as peças que o líder precisa separar para pendências futuras. Deixe em branco se não precisar de nenhuma.</div>';
@@ -1320,6 +1361,7 @@ function openMailto(url){
         '<div class="part-row" data-part="'+p.id+'">'+
           '<div class="field" style="flex:1.4;"><label class="field-label">Peça '+(idx+1)+'</label><input type="text" data-part-field="nome" value="'+escapeHtml(p.nome)+'" placeholder="Ex.: Mangueira hidráulica L.D."></div>'+
           '<div class="field" style="flex:.5;"><label class="field-label">Qtd.</label><input type="text" inputmode="numeric" class="mono" data-part-field="qtd" value="'+escapeHtml(p.qtd)+'" placeholder="1"></div>'+
+          renderPartPhoto(p)+
           (w.pecas.length>1 ? '<button type="button" class="part-remove" data-action="remove-part" data-id="'+p.id+'" title="Remover">×</button>' : '<span style="width:26px;"></span>')+
         '</div>'+
         '<div class="field" style="padding:0 0 10px;"><input type="text" data-part-field="obs" value="'+escapeHtml(p.obs)+'" placeholder="Observação (opcional)"></div>'
@@ -1332,6 +1374,7 @@ function openMailto(url){
 
   function stepRevisao(w){
     var tmpl = CHECKLIST_TEMPLATES[w.frotaTipo];
+    var naoLiberou = w.gestorDeixou==="nao";
     var itemsChecked = Object.keys(w.checklist).filter(function(k){ return w.checklist[k].status; }).length;
     var totalItems = tmpl.sections.reduce(function(a,s){ return a+s.items.length; },0);
     var problemas = Object.keys(w.checklist).filter(function(k){ return w.checklist[k].status==="problema"; }).length;
@@ -1344,8 +1387,12 @@ function openMailto(url){
           '<div class="row-between"><span class="muted">Frota</span><span>'+tmpl.label+' '+escapeHtml(w.frotaNumero)+'</span></div>'+
           '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(w.horimetro||"—")+'</span></div>'+
           '<div class="row-between"><span class="muted">Data</span><span>'+fmtDate(w.dataServico)+'</span></div>'+
-          '<div class="row-between"><span class="muted">Checklist preenchido</span><span>'+itemsChecked+' de '+totalItems+'</span></div>'+
-          (problemas>0 ? '<div class="banner banner-danger">⚠️ '+problemas+' item(ns) marcados como Problema</div>' : '')+
+          '<div class="row-between"><span class="muted">Frente</span><span>'+escapeHtml(w.frente||"—")+'</span></div>'+
+          (naoLiberou
+            ? '<div class="row-between"><span class="muted">Gestor não deixou parar</span><span style="font-weight:600;">'+escapeHtml(w.gestorNome||"—")+'</span></div>'+
+              '<div class="row-between"><span class="muted">Checklist</span><span>Não realizado</span></div>'
+            : '<div class="row-between"><span class="muted">Checklist preenchido</span><span>'+itemsChecked+' de '+totalItems+'</span></div>')+
+          (problemas>0 && !naoLiberou ? '<div class="banner banner-danger">⚠️ '+problemas+' item(ns) marcados como Problema</div>' : '')+
         '</div>'+
         '<div class="card stack">'+
           '<h3>Peças a solicitar</h3>'+
@@ -1500,6 +1547,8 @@ function openMailto(url){
       '<span class="pill '+(STATUS_PILL_CLASS[os.status]||"pill-gray")+'">'+(STATUS_LABEL[os.status]||os.status)+'</span></div>';
     html += '<div class="card stack">'+
       '<div class="row-between"><span class="muted">Mecânico</span><span style="font-weight:600;">'+escapeHtml(os.mecanicoNome)+' · <span class="mono">'+escapeHtml(os.mecanicoMatricula)+'</span></span></div>'+
+      (os.frente ? '<div class="row-between"><span class="muted">Frente</span><span style="font-weight:600;">'+escapeHtml(os.frente)+'</span></div>' : '')+
+      (os.gestorDeixouParar===false ? '<div class="row-between"><span class="muted">Gestor não deixou parar</span><span style="font-weight:600;">'+escapeHtml(os.gestorNome||"—")+'</span></div>' : '')+
       '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(os.horimetro||"—")+'</span></div>'+
       '<div class="row-between"><span class="muted">Data</span><span style="font-weight:600;">'+fmtDate(os.dataServico)+'</span></div>'+
       (os.equipamentoAssetId ? '<img src="'+assetUrl(os.equipamentoAssetId)+'" style="width:100%; border-radius:14px; margin-top:4px;" alt="Foto do equipamento">' : '')+
@@ -1524,6 +1573,7 @@ function openMailto(url){
         html += (
           '<label class="checkbox-row">'+
             '<input type="checkbox" data-separar-id="'+p.id+'" checked>'+
+            (p.fotoAssetId ? '<img src="'+assetUrl(p.fotoAssetId)+'" alt="Foto da peça" class="part-thumb">' : '')+
             '<span class="checkbox-row-text">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span>'+
             (p.obs?('<br><span class="muted" style="font-size:12.5px; font-weight:600;">'+escapeHtml(p.obs)+'</span>'):'')+
             '</span>'+
@@ -1707,6 +1757,11 @@ function openMailto(url){
           state.busy = false;
           if(kind==="cracha"){ state.wizard.crachaAssetId = id; }
           else if(kind==="equipamento"){ state.wizard.equipamentoAssetId = id; }
+          else if(kind.indexOf("peca:")===0){
+            var pid = kind.slice("peca:".length);
+            var part = state.wizard.pecas.find(function(p){ return p.id===pid; });
+            if(part && id) part.fotoAssetId = id;
+          }
           else if(kind.indexOf("problema:")===0){
             var itemId = kind.slice("problema:".length);
             var entry = state.wizard.checklist[itemId] || {};
@@ -1753,6 +1808,13 @@ function openMailto(url){
     bindInput("in-mecNome", function(v){ state.mecNome = v; });
     bindInput("in-mecMatricula", function(v){ state.mecMatricula = v; });
     bindInput("in-frotaNumero", function(v){ state.wizard.frotaNumero = v; });
+    bindInput("in-gestorNome", function(v){ state.wizard.gestorNome = v; refreshNextBtn(); });
+    ["in-mecNome","in-mecMatricula","in-frotaNumero"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.addEventListener("input", refreshNextBtn);
+    });
+    var freSel = document.getElementById("in-frente");
+    if(freSel){ freSel.addEventListener("change", function(){ state.wizard.frente = freSel.value; render(); }); }
     bindInput("in-horimetro", function(v){ state.wizard.horimetro = v; });
     bindInput("in-dataServico", function(v){ state.wizard.dataServico = v; });
     bindInput("in-obsGeral", function(v){ state.wizard.obsGeral = v; });
@@ -1814,14 +1876,21 @@ function openMailto(url){
     if(action==="go-lider-home"){ state.route="lider-home"; state.currentOsId=null; render(); return; }
 
     if(action==="new-apontamento"){ state.wizard = freshWizard(); state.route = "mec-wizard"; render(); return; }
-    if(action==="wizard-back"){ state.wizard.step = Math.max(1, state.wizard.step-1); render(); return; }
+    if(action==="wizard-back"){
+      var wb = state.wizard;
+      wb.step = (wb.step===4 && wb.gestorDeixou==="nao") ? 1 : Math.max(1, wb.step-1);
+      render(); return;
+    }
+    if(action==="set-gestor"){
+      state.wizard.gestorDeixou = t.getAttribute("data-val");
+      if(state.wizard.gestorDeixou==="sim") state.wizard.gestorNome = "";
+      state.error = null; render(); return;
+    }
     if(action==="wizard-next"){
-      if(state.wizard.step===1){ lsSet("af_mecNome", state.mecNome); lsSet("af_mecMatricula", state.mecMatricula); }
-      if(state.wizard.step===2 && missingProblemPhotos(state.wizard).length>0){
-        state.error = "Anexe uma foto em cada item marcado como Problema antes de continuar.";
-        render(); return;
-      }
-      state.wizard.step = Math.min(4, state.wizard.step+1);
+      var wn = state.wizard;
+      if(wn.step===1){ lsSet("af_mecNome", state.mecNome); lsSet("af_mecMatricula", state.mecMatricula); }
+      if(wn.step===1 && wn.gestorDeixou==="nao"){ wn.step = 4; render(); return; }
+      wn.step = Math.min(4, wn.step+1);
       render(); return;
     }
     if(action==="wizard-submit"){ submitWizard(); return; }
@@ -1838,6 +1907,11 @@ function openMailto(url){
       render(); return;
     }
     if(action==="add-part"){ state.wizard.pecas.push({ id: uid(), nome:"", qtd:"1", obs:"" }); render(); return; }
+    if(action==="retake-part-photo"){
+      var rp = state.wizard.pecas.find(function(p){ return p.id===t.getAttribute("data-id"); });
+      if(rp) rp.fotoAssetId = null;
+      render(); return;
+    }
     if(action==="remove-part"){
       var pid = t.getAttribute("data-id");
       state.wizard.pecas = state.wizard.pecas.filter(function(p){ return p.id!==pid; });
@@ -1900,19 +1974,25 @@ function openMailto(url){
       state.error = "Preencha nome, matrícula e número da frota antes de enviar.";
       state.wizard.step = 1; render(); return;
     }
-    if(missingProblemPhotos(w).length>0){
-      state.error = "Anexe uma foto em cada item marcado como Problema antes de enviar.";
-      state.wizard.step = 2; render(); return;
+    if(!w.frente || !w.gestorDeixou){
+      state.error = "Informe a frente e se o gestor deixou a máquina parar.";
+      state.wizard.step = 1; render(); return;
     }
-    var pecas = w.pecas.filter(function(p){ return p.nome.trim(); }).map(function(p){
-      return { id:p.id, nome:p.nome.trim(), qtd:p.qtd||"1", obs:p.obs||"", entregue:false, aplicada:false };
+    if(w.gestorDeixou==="nao" && !(w.gestorNome||"").trim()){
+      state.error = "Informe o nome do gestor que não deixou parar.";
+      state.wizard.step = 1; render(); return;
+    }
+    var naoLiberou = w.gestorDeixou==="nao";
+    var pecas = naoLiberou ? [] : w.pecas.filter(function(p){ return p.nome.trim(); }).map(function(p){
+      return { id:p.id, nome:p.nome.trim(), qtd:p.qtd||"1", obs:p.obs||"", fotoAssetId:p.fotoAssetId||null, entregue:false, aplicada:false };
     });
     var data = {
       osCode: genOsCode(), frotaTipo: w.frotaTipo, frotaNumero: w.frotaNumero.trim(),
       mecanicoNome: state.mecNome.trim(), mecanicoMatricula: state.mecMatricula.trim(),
       crachaAssetId: w.crachaAssetId || null, equipamentoAssetId: w.equipamentoAssetId || null,
       horimetro: w.horimetro || "", dataServico: w.dataServico,
-      checklist: w.checklist, obsGeral: w.obsGeral || "", pecas: pecas,
+      frente: w.frente, gestorDeixouParar: !naoLiberou, gestorNome: naoLiberou ? w.gestorNome.trim() : "",
+      checklist: naoLiberou ? {} : w.checklist, obsGeral: w.obsGeral || "", pecas: pecas,
       status: pecas.length ? "pecas_pendentes" : "concluida",
       liderNome: null, liderSepararEm: null, assinaturaAssetId: null, assinaturaEm: null
     };
