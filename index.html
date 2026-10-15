@@ -806,6 +806,9 @@ try{
 var photoJobs = [];
 if(os.crachaAssetId){ photoJobs.push({ nome: "cracha_" + os.osCode + ".jpg", url: assetUrl(os.crachaAssetId) }); }
 if(os.equipamentoAssetId){ photoJobs.push({ nome: "equipamento_" + os.osCode + ".jpg", url: assetUrl(os.equipamentoAssetId) }); }
+(os.pecas||[]).forEach(function(p){
+if(p.fotoAssetId){ photoJobs.push({ nome: "peca_" + (p.nome||p.id).replace(/[^a-zA-Z0-9]+/g,"_") + "_" + os.osCode + ".jpg", url: assetUrl(p.fotoAssetId) }); }
+});
 Object.keys(os.checklist||{}).forEach(function(k){
 var c = os.checklist[k];
 if(c && c.status==="problema" && c.fotoAssetId){
@@ -825,8 +828,20 @@ mecanicoNome: os.mecanicoNome,
 mecanicoMatricula: os.mecanicoMatricula,
 horimetro: os.horimetro || "",
 dataServico: os.dataServico || "",
+frente: os.frente || "",
+gestorDeixouParar: os.gestorDeixouParar===false ? "Não" : "Sim",
+gestorNome: os.gestorNome || "",
 itensComProblema: buildItensComProblemaText(os),
 pecasSolicitadas: buildPecasSolicitadasText(os),
+dadosJson: JSON.stringify({
+  osCode: os.osCode, frente: os.frente || "", frotaTipo: os.frotaTipo, frotaNumero: os.frotaNumero,
+  horimetro: os.horimetro || "", dataServico: os.dataServico || "",
+  mecanicoNome: os.mecanicoNome, mecanicoMatricula: os.mecanicoMatricula,
+  gestorDeixouParar: os.gestorDeixouParar===false ? false : true, gestorNome: os.gestorNome || "",
+  obsGeral: os.obsGeral || "",
+  checklist: os.checklist || {},
+  pecas: (os.pecas||[]).map(function(p){ return { nome: p.nome, qtd: p.qtd, obs: p.obs || "", temFoto: !!p.fotoAssetId }; })
+}),
 fotos: fotos.filter(Boolean)
 };
 return fetch(POWER_AUTOMATE_URL, {
@@ -1346,10 +1361,25 @@ function openMailto(url){
 
   function renderPartPhoto(p){
     var url = p.fotoAssetId ? assetUrl(p.fotoAssetId) : null;
-    return '<label class="part-photo'+(url?" filled":"")+'" title="Foto da peça (opcional)">'+
-      (url ? '<img src="'+url+'" alt="foto da peça">' : '<span class="ms-ico">📷</span>')+
-      '<input type="file" accept="image/*" style="display:none" data-photo-input="peca:'+p.id+'">'+
-    '</label>';
+    var input = function(extra){
+      return '<input type="file" accept="image/*"'+extra+' style="display:none" data-photo-input="peca:'+p.id+'">';
+    };
+    if(url){
+      // Já tem foto: toque troca, e o Android oferece câmera e galeria (sem capture).
+      return '<label class="part-photo filled" title="Trocar foto da peça">'+
+        '<img src="'+url+'" alt="foto da peça">'+
+        input('')+
+      '</label>';
+    }
+    // Sem foto: dois botões, um para câmera e outro para galeria.
+    return '<div class="part-photo-pair" style="display:flex; gap:6px; margin-top:20px; flex:none;">'+
+      '<label class="part-photo" title="Tirar foto da peça" style="margin-top:0;"><span class="ms-ico">📷</span>'+
+        input(' capture="environment"')+
+      '</label>'+
+      '<label class="part-photo" title="Escolher foto da galeria" style="margin-top:0;"><span class="ms-ico">🖼️</span>'+
+        input('')+
+      '</label>'+
+    '</div>';
   }
 
   function stepPecas(w){
