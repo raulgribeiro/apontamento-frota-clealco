@@ -918,6 +918,7 @@ function openMailto(url){
     error: null,
     wizard: null,
     sigDrawing: false,
+    sigStrokes: [],
     sigHasStroke: false
   };
 
@@ -954,7 +955,7 @@ function openMailto(url){
       db.collection("os").orderBy("createdAt","desc").limit(300).onSnapshot(
         function(snap){
           state.osAll = snap.docs.map(function(d){ var b=d.data()||{}; b.id=d.id; return b; });
-          render();
+          if(state.route!=="mec-signature"){ render(); }
         },
         function(err){
           state.error = "Conexão com os dados instável (" + err.code + "). Mantendo a última versão vista.";
@@ -1730,44 +1731,72 @@ function openMailto(url){
    * Signature pad
    * ------------------------------------------------------------- */
   var sigCtx = null, sigCanvas = null, sigLast = null;
+  // Os traços ficam no estado (state.sigStrokes), não só no canvas. Assim, se a tela
+  // for redesenhada durante a assinatura, o desenho é refeito e não se perde.
+  function drawSigStrokes(){
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    (state.sigStrokes || []).forEach(function(pts){
+      if(!pts.length) return;
+      sigCtx.beginPath();
+      sigCtx.moveTo(pts[0].x, pts[0].y);
+      for(var i = 1; i < pts.length; i++){ sigCtx.lineTo(pts[i].x, pts[i].y); }
+      sigCtx.stroke();
+    });
+  }
   function initSignaturePad(){
     sigCanvas = document.getElementById("sig-canvas");
     if(!sigCanvas) return;
+    if(!state.sigStrokes){ state.sigStrokes = []; }
     var ratio = window.devicePixelRatio || 1;
     var rect = sigCanvas.getBoundingClientRect();
     sigCanvas.width = rect.width * ratio;
     sigCanvas.height = rect.height * ratio;
     sigCtx = sigCanvas.getContext("2d");
-    sigCtx.scale(ratio, ratio);
+    sigCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
     var styles = getComputedStyle(document.documentElement);
     sigCtx.strokeStyle = styles.getPropertyValue("--text").trim() || "#000";
     sigCtx.lineWidth = 2.4;
     sigCtx.lineCap = "round";
     sigCtx.lineJoin = "round";
+    drawSigStrokes();
     function pos(e){
       var r = sigCanvas.getBoundingClientRect();
       var cx = (e.touches ? e.touches[0].clientX : e.clientX);
       var cy = (e.touches ? e.touches[0].clientY : e.clientY);
       return { x: cx - r.left, y: cy - r.top };
     }
-    function start(e){ e.preventDefault(); state.sigDrawing = true; sigLast = pos(e); }
+    function start(e){
+      e.preventDefault();
+      if(state.sigDrawing) return;
+      state.sigDrawing = true;
+      sigLast = pos(e);
+      state.sigStrokes.push([sigLast]);
+    }
     function move(e){
       if(!state.sigDrawing) return;
       e.preventDefault();
       var p = pos(e);
+      var cur = state.sigStrokes[state.sigStrokes.length - 1];
+      if(!cur){ cur = [sigLast]; state.sigStrokes.push(cur); }
+      cur.push(p);
       sigCtx.beginPath(); sigCtx.moveTo(sigLast.x, sigLast.y); sigCtx.lineTo(p.x, p.y); sigCtx.stroke();
       sigLast = p; state.sigHasStroke = true;
     }
     function end(){ state.sigDrawing = false; }
     sigCanvas.addEventListener("pointerdown", start);
     sigCanvas.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", end);
     sigCanvas.addEventListener("touchstart", start, {passive:false});
     sigCanvas.addEventListener("touchmove", move, {passive:false});
     sigCanvas.addEventListener("touchend", end);
+    if(!window.__sigEndBound){
+      window.addEventListener("pointerup", end);
+      window.addEventListener("touchend", end);
+      window.__sigEndBound = true;
+    }
   }
   function clearSignature(){
-    if(sigCtx && sigCanvas){ sigCtx.clearRect(0,0,sigCanvas.width, sigCanvas.height); }
+    state.sigStrokes = [];
+    if(sigCtx && sigCanvas){ sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); }
     state.sigHasStroke = false;
   }
 
@@ -1866,7 +1895,7 @@ function openMailto(url){
     var cs = document.getElementById("in-consultaStatus");
     if(cs){ cs.addEventListener("change", function(){ state.consultaFilters.status = cs.value; render(); }); }
 
-    app.addEventListener("click", onClick);
+    if(!app.dataset.clickBound){ app.addEventListener("click", onClick); app.dataset.clickBound = "1"; }
   }
 
   function renderConsultaListOnly(){
@@ -1948,7 +1977,7 @@ function openMailto(url){
       render(); return;
     }
 
-    if(action==="open-signature"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-signature"; render(); return; }
+    if(action==="open-signature"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-signature"; state.sigStrokes = []; state.sigHasStroke = false; render(); return; }
     if(action==="open-apply"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-apply"; render(); return; }
     if(action==="sig-clear"){ clearSignature(); return; }
     if(action==="sig-confirm"){ confirmSignature(); return; }
