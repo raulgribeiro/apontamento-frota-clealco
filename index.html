@@ -914,6 +914,7 @@ function openMailto(url){
     lcDraft: null,
     lideres: [],
     verTodas: false,
+    supUnidade: lsGet("af_supUnidade", ""),
     mecUnidade: lsGet("af_mecUnidade", ""),
     liderTab: "fila",
     osAll: [],
@@ -945,6 +946,10 @@ function openMailto(url){
   }
   function osVisiveisLider(){
     var all = osList();
+    if(state.role==="supervisor"){
+      if(!state.supUnidade) return all;
+      return all.filter(function(o){ return o.unidade === state.supUnidade; });
+    }
     var cad = state.liderCad;
     if(state.verTodas || !cad) return all;
     return all.filter(function(o){ return o.unidade === cad.unidade; });
@@ -1081,7 +1086,7 @@ function openMailto(url){
   var app = document.getElementById("app");
 
   function navItemsFor(role){
-    if(role==="lider"){
+    if(role==="lider" || role==="supervisor"){
       return [
         { route:"lider-home", icon:"📋", label:"Fila" },
         { route:"consulta", icon:"📜", label:"Serviços" }
@@ -1121,8 +1126,8 @@ function openMailto(url){
         '</div></div>'+
         items.map(function(it){ return renderNavItem(it, false); }).join("")+
         '<div class="sidenav-footer">'+
-          '<div style="padding:8px 12px 4px;"><p class="eyebrow" style="margin-bottom:2px;">'+(state.role==="lider"?"Líder":"Mecânico")+'</p>'+
-          '<p style="font-weight:700; font-size:14px;">'+escapeHtml(state.role==="lider" ? (state.liderNome||"—") : (state.mecNome||"—"))+'</p></div>'+
+          '<div style="padding:8px 12px 4px;"><p class="eyebrow" style="margin-bottom:2px;">'+(state.role==="supervisor"?"Supervisor / Coordenador":(state.role==="lider"?"Líder":"Mecânico"))+'</p>'+
+          '<p style="font-weight:700; font-size:14px;">'+escapeHtml((state.role==="lider"||state.role==="supervisor") ? (state.liderNome||"—") : (state.mecNome||"—"))+'</p></div>'+
           '<button class="nav-item" data-action="switch-role"><span class="nav-ico">🔁</span><span>Trocar perfil</span></button>'+
         '</div>'+
       '</nav>'
@@ -1174,7 +1179,7 @@ function openMailto(url){
   }
 
   function renderTopbar(){
-    var roleLabel = state.role==="lider" ? "Líder" : (state.role==="mecanico" ? "Mecânico" : "");
+    var roleLabel = state.role==="supervisor" ? "Supervisor" : (state.role==="lider" ? "Líder" : (state.role==="mecanico" ? "Mecânico" : ""));
     return (
       '<div class="topbar"><div class="topbar-inner">'+
         '<div class="brand">'+
@@ -1261,6 +1266,10 @@ function openMailto(url){
           '<button class="role-card" data-action="pick-role" data-role="lider">'+
             '<div class="role-icon blue">📋</div>'+
             '<div><h3>Sou Líder</h3><p class="muted" style="margin-top:3px; font-size:13.5px; font-weight:600;">Separar peças e liberar entrega</p></div>'+
+          '</button>'+
+          '<button class="role-card" data-action="pick-role" data-role="supervisor">'+
+            '<div class="role-icon blue">👁️</div>'+
+            '<div><h3>Sou Supervisor / Coordenador</h3><p class="muted" style="margin-top:3px; font-size:13.5px; font-weight:600;">Visão geral de todas as unidades</p></div>'+
           '</button>'+
         '</div>'+
       '</div>'
@@ -1608,9 +1617,15 @@ function openMailto(url){
     var emAndamento = all.filter(function(o){ return o.status==="aguardando_assinatura" || o.status==="aguardando_aplicacao"; });
     var historico = all.filter(function(o){ return o.status==="concluida"; });
     var html = '<div class="stack">';
-    html += '<p class="eyebrow">Líder</p><h1 style="margin-top:4px;">Fila de peças 📋</h1>';
+    html += '<p class="eyebrow">'+(state.role==="supervisor"?"Supervisor / Coordenador":"Líder")+'</p><h1 style="margin-top:4px;">Fila de peças 📋</h1>';
     var cad = state.liderCad;
-    if(cad){
+    if(state.role==="supervisor"){
+      var opts = [""].concat(UNIDADES);
+      html += '<div class="tabs">'+opts.map(function(u){
+        return '<button class="tab-btn '+(state.supUnidade===u?"active":"")+'" data-action="sup-unidade" data-val="'+escapeHtml(u)+'">'+(u?escapeHtml(u):"Todas")+'</button>';
+      }).join("")+'</div>';
+      html += '<p class="muted" style="font-weight:700; font-size:13px;">'+(state.supUnidade ? 'Mostrando só a unidade '+escapeHtml(state.supUnidade) : 'Mostrando todas as unidades')+' · '+all.length+' OS</p>';
+    } else if(cad){
       html += '<div class="card"><div class="row-between">'+
         '<div><p class="eyebrow" style="margin-bottom:2px;">Líder da unidade</p><h2 style="margin:0;">'+escapeHtml(cad.unidade)+'</h2>'+
         '<p class="muted" style="font-size:13px; font-weight:600;">'+escapeHtml(cad.email)+'</p></div>'+
@@ -1755,7 +1770,7 @@ function openMailto(url){
   /* ---------------------- Consulta (histórico) ---------------------- */
   function viewConsulta(){
     var f = state.consultaFilters;
-    var all = (state.role==="lider" ? osVisiveisLider() : osList()).slice().sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
+    var all = ((state.role==="lider"||state.role==="supervisor") ? osVisiveisLider() : osList()).slice().sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
     var filtered = all.filter(function(o){
       var matchQ = !f.q || norm(o.mecanicoNome).indexOf(norm(f.q))>-1 || norm(o.frotaNumero).indexOf(norm(f.q))>-1 || norm(o.osCode).indexOf(norm(f.q))>-1;
       var matchTipo = f.tipo==="todos" || o.frotaTipo===f.tipo;
@@ -2049,7 +2064,7 @@ function openMailto(url){
     if(action==="pick-role"){
       state.role = t.getAttribute("data-role");
       lsSet("af_role", state.role);
-      state.route = state.role==="lider" ? "lider-home" : "mec-home";
+      state.route = (state.role==="lider"||state.role==="supervisor") ? "lider-home" : "mec-home";
       render(); return;
     }
     if(action==="switch-role"){ state.role = null; state.route = "gate"; lsSet("af_role", null); render(); return; }
@@ -2064,6 +2079,7 @@ function openMailto(url){
     }
     if(action==="lider-salvar-cadastro"){ salvarCadastroLider(); return; }
     if(action==="lider-editar-cadastro"){ state.lcDraft = null; state.route = "lider-cadastro"; render(); return; }
+    if(action==="sup-unidade"){ state.supUnidade = t.getAttribute("data-val") || ""; lsSet("af_supUnidade", state.supUnidade); render(); return; }
     if(action==="lider-ver"){ state.verTodas = t.getAttribute("data-val")==="todas"; render(); return; }
 
     if(action==="new-apontamento"){ state.wizard = freshWizard(); state.route = "mec-wizard"; render(); return; }
@@ -2286,7 +2302,7 @@ notifyPowerAutomate(data);
 
   function boot(){
     applyTheme("light");
-    if(state.role){ state.route = state.role==="lider" ? "lider-home" : "mec-home"; }
+    if(state.role){ state.route = (state.role==="lider"||state.role==="supervisor") ? "lider-home" : "mec-home"; }
     render();
 
     if(window.claude && window.claude.use){
