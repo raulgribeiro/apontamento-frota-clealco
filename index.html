@@ -736,6 +736,7 @@ var POWER_AUTOMATE_URL = "https://default1bb4b50656164cf6aa3cea87163f01.69.envir
     lines.push("Novo apontamento de manutenção enviado pelo mecânico.");
     lines.push("");
     lines.push("OS: " + os.osCode);
+    if(os.unidade) lines.push("Unidade: " + os.unidade);
     lines.push("Frota: " + tmpl.label + " " + os.frotaNumero);
     lines.push("Mecânico: " + os.mecanicoNome + " (matrícula " + os.mecanicoMatricula + ")");
     lines.push("Horímetro: " + (os.horimetro || "—"));
@@ -829,12 +830,14 @@ mecanicoMatricula: os.mecanicoMatricula,
 horimetro: os.horimetro || "",
 dataServico: os.dataServico || "",
 frente: os.frente || "",
+unidade: os.unidade || "",
+emailsLideres: emailsDaUnidade(os.unidade).join(";"),
 gestorDeixouParar: os.gestorDeixouParar===false ? "Não" : "Sim",
 gestorNome: os.gestorNome || "",
 itensComProblema: buildItensComProblemaText(os),
 pecasSolicitadas: buildPecasSolicitadasText(os),
 dadosJson: JSON.stringify({
-  osCode: os.osCode, frente: os.frente || "", frotaTipo: os.frotaTipo, frotaNumero: os.frotaNumero,
+  osCode: os.osCode, unidade: os.unidade || "", frente: os.frente || "", frotaTipo: os.frotaTipo, frotaNumero: os.frotaNumero,
   horimetro: os.horimetro || "", dataServico: os.dataServico || "",
   mecanicoNome: os.mecanicoNome, mecanicoMatricula: os.mecanicoMatricula,
   gestorDeixouParar: os.gestorDeixouParar===false ? false : true, gestorNome: os.gestorNome || "",
@@ -907,6 +910,11 @@ function openMailto(url){
     mecNome: lsGet("af_mecNome", ""),
     mecMatricula: lsGet("af_mecMatricula", ""),
     liderNome: lsGet("af_liderNome", ""),
+    liderCad: lsGet("af_liderCad", null),
+    lcDraft: null,
+    lideres: [],
+    verTodas: false,
+    mecUnidade: lsGet("af_mecUnidade", ""),
     liderTab: "fila",
     osAll: [],
     localOS: [],
@@ -923,9 +931,39 @@ function openMailto(url){
   };
 
   var FRENTES_LIST = ["11", "12", "13", "14", "21", "22", "23", "24", "25"];
+
+  /* Unidades: para incluir outra, basta acrescentar o nome na lista. */
+  var UNIDADES = ["Clementina", "Queiroz"];
+  var EMAIL_DOMAIN = "@clealco.com.br";
+  function emailValido(e){
+    return /^[a-z0-9._%+-]+@clealco\.com\.br$/.test(String(e || "").trim().toLowerCase());
+  }
+  function unidadeSeg(action, atual){
+    return '<div class="segmented gestor-seg">' + UNIDADES.map(function(u){
+      return '<button type="button" data-action="' + action + '" data-val="' + escapeHtml(u) + '" class="' + (atual === u ? "active" : "") + '">' + escapeHtml(u) + '</button>';
+    }).join("") + '</div>';
+  }
+  function osVisiveisLider(){
+    var all = osList();
+    var cad = state.liderCad;
+    if(state.verTodas || !cad) return all;
+    return all.filter(function(o){ return o.unidade === cad.unidade; });
+  }
+  function emailsDaUnidade(u){
+    var vistos = {}, out = [];
+    function add(e){
+      if(!emailValido(e)) return;
+      var k = String(e).trim().toLowerCase();
+      if(!vistos[k]){ vistos[k] = 1; out.push(k); }
+    }
+    if(!u) return out;
+    (state.lideres || []).forEach(function(l){ if(l && l.unidade === u) add(l.email); });
+    if(state.liderCad && state.liderCad.unidade === u) add(state.liderCad.email);
+    return out;
+  }
   function freshWizard(){
     return {
-      step: 1, frotaTipo: "COLHEDORA", frotaNumero: "",
+      step: 1, frotaTipo: "COLHEDORA", frotaNumero: "", unidade: state.mecUnidade || "",
       equipamentoAssetId: null, crachaAssetId: null, frente: "", gestorDeixou: "", gestorNome: "",
       horimetro: "", dataServico: todayISO(),
       checklist: {}, obsGeral: "",
@@ -951,6 +989,7 @@ function openMailto(url){
    * ------------------------------------------------------------- */
   function subscribe(){
     if(!db) { render(); return; }
+    subscribeLideres();
     try{
       db.collection("os").orderBy("createdAt","desc").limit(300).onSnapshot(
         function(snap){
@@ -963,6 +1002,50 @@ function openMailto(url){
         }
       );
     }catch(e){ render(); }
+  }
+
+  function subscribeLideres(){
+    if(!db) return;
+    try{
+      db.collection("lideres").onSnapshot(function(snap){
+        state.lideres = snap.docs.map(function(d){ var b = d.data() || {}; b.id = d.id; return b; });
+      }, function(){ /* sem permissão ou sem rede: segue só com o cadastro deste aparelho */ });
+    }catch(e){}
+  }
+
+  function salvarCadastroLider(){
+    var d = state.lcDraft || {};
+    var nome = (d.nome || "").trim();
+    var email = (d.email || "").trim().toLowerCase();
+    var unidade = d.unidade || "";
+    if(!nome){ state.error = "Informe o nome do líder."; render(); return; }
+    if(UNIDADES.indexOf(unidade) < 0){ state.error = "Escolha a unidade."; render(); return; }
+    if(!emailValido(email)){ state.error = "Use um e-mail corporativo " + EMAIL_DOMAIN + "."; render(); return; }
+    var antigo = state.liderCad;
+    var cad = { nome: nome, unidade: unidade, email: email };
+    state.liderCad = cad;
+    state.liderNome = nome;
+    lsSet("af_liderCad", cad);
+    lsSet("af_liderNome", nome);
+    state.lcDraft = null;
+    state.verTodas = false;
+    state.route = "lider-home";
+    render();
+    if(!db){
+      state.error = "Cadastro salvo só neste aparelho: sem conexão com o banco, os avisos por e-mail não chegam até você.";
+      render();
+      return;
+    }
+    db.collection("lideres").doc(email).set({ nome: nome, unidade: unidade, email: email, updatedAt: new Date().toISOString() })
+      .then(function(){
+        if(antigo && antigo.email && antigo.email !== email){
+          return db.collection("lideres").doc(antigo.email).delete().catch(function(){});
+        }
+      })
+      .catch(function(){
+        state.error = "Cadastro salvo neste aparelho, mas não foi possível registrá-lo para os avisos por e-mail. Avise o responsável pelo app.";
+        render();
+      });
   }
 
   function createOs(data){
@@ -1053,6 +1136,9 @@ function openMailto(url){
   }
 
   function render(){
+    if(state.role === "lider" && !state.liderCad && state.route !== "gate" && state.route !== "lider-cadastro"){
+      state.route = "lider-cadastro";
+    }
     var html = '<div class="app-shell">';
     html += renderSidenav();
     html += '<div class="content-col">';
@@ -1068,6 +1154,7 @@ function openMailto(url){
       case "mec-submitted": html += viewMecSubmitted(); break;
       case "lider-home": html += viewLiderHome(); break;
       case "lider-detail": html += viewLiderDetail(); break;
+      case "lider-cadastro": html += viewLiderCadastro(); break;
       case "consulta": html += viewConsulta(); break;
       case "consulta-detail": html += viewConsultaDetail(); break;
       default: html += "";
@@ -1104,7 +1191,7 @@ function openMailto(url){
 
   function wizardNextDisabled(w){
     if(w.step!==1) return false;
-    return !w.frotaNumero || !w.frente || !w.gestorDeixou || (w.gestorDeixou==="nao" && !(w.gestorNome||"").trim()) || !state.mecNome || !state.mecMatricula;
+    return !w.frotaNumero || !w.unidade || !w.frente || !w.gestorDeixou || (w.gestorDeixou==="nao" && !(w.gestorNome||"").trim()) || !state.mecNome || !state.mecMatricula;
   }
   function refreshNextBtn(){
     var btn = app.querySelector('[data-action="wizard-next"]');
@@ -1267,6 +1354,7 @@ function openMailto(url){
         '</div>'+
         '<div class="card stack">'+
           '<h3>Equipamento</h3>'+
+          '<div class="field"><label class="field-label">Unidade</label>'+unidadeSeg("set-unidade", w.unidade)+'</div>'+
           '<div class="field-grid">'+
             '<div class="field"><label class="field-label">Frota (tipo)</label><select id="in-frotaTipo">'+opts+'</select></div>'+
             '<div class="field"><label class="field-label">Número da frota</label><input type="text" id="in-frotaNumero" class="mono" value="'+escapeHtml(w.frotaNumero)+'" placeholder="Ex.: CH-104"></div>'+
@@ -1418,6 +1506,7 @@ function openMailto(url){
           '<div class="row-between"><span class="muted">Frota</span><span>'+tmpl.label+' '+escapeHtml(w.frotaNumero)+'</span></div>'+
           '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(w.horimetro||"—")+'</span></div>'+
           '<div class="row-between"><span class="muted">Data</span><span>'+fmtDate(w.dataServico)+'</span></div>'+
+          '<div class="row-between"><span class="muted">Unidade</span><span>'+escapeHtml(w.unidade||"—")+'</span></div>'+
           '<div class="row-between"><span class="muted">Frente</span><span>'+escapeHtml(w.frente||"—")+'</span></div>'+
           (naoLiberou
             ? '<div class="row-between"><span class="muted">Gestor não deixou parar</span><span style="font-weight:600;">'+escapeHtml(w.gestorNome||"—")+'</span></div>'+
@@ -1514,12 +1603,24 @@ function openMailto(url){
   }
 
   function viewLiderHome(){
-    var all = osList();
+    var all = osVisiveisLider();
     var fila = all.filter(function(o){ return o.status==="pecas_pendentes"; });
     var emAndamento = all.filter(function(o){ return o.status==="aguardando_assinatura" || o.status==="aguardando_aplicacao"; });
     var historico = all.filter(function(o){ return o.status==="concluida"; });
     var html = '<div class="stack">';
     html += '<p class="eyebrow">Líder</p><h1 style="margin-top:4px;">Fila de peças 📋</h1>';
+    var cad = state.liderCad;
+    if(cad){
+      html += '<div class="card"><div class="row-between">'+
+        '<div><p class="eyebrow" style="margin-bottom:2px;">Líder da unidade</p><h2 style="margin:0;">'+escapeHtml(cad.unidade)+'</h2>'+
+        '<p class="muted" style="font-size:13px; font-weight:600;">'+escapeHtml(cad.email)+'</p></div>'+
+        '<button class="btn btn-secondary" data-action="lider-editar-cadastro">Editar cadastro</button></div></div>';
+      html += '<div class="tabs">'+
+        '<button class="tab-btn '+(!state.verTodas?"active":"")+'" data-action="lider-ver" data-val="minha">Minha unidade</button>'+
+        '<button class="tab-btn '+(state.verTodas?"active":"")+'" data-action="lider-ver" data-val="todas">Todas as unidades</button>'+
+      '</div>';
+      html += '<p class="muted" style="font-weight:700; font-size:13px;">'+(state.verTodas ? 'Mostrando todas as unidades' : 'Mostrando só a unidade '+escapeHtml(cad.unidade))+' · '+all.length+' OS</p>';
+    }
     html += '<div class="kpi-row">'+
       '<div class="kpi yellow"><div class="kpi-num">'+fila.length+'</div><div class="kpi-label">A separar</div></div>'+
       '<div class="kpi blue"><div class="kpi-num">'+emAndamento.length+'</div><div class="kpi-label">Em andamento</div></div>'+
@@ -1543,6 +1644,25 @@ function openMailto(url){
     return html;
   }
 
+  function viewLiderCadastro(){
+    var d = state.lcDraft || (state.lcDraft = state.liderCad ? Object.assign({}, state.liderCad) : { nome: "", unidade: "", email: "" });
+    var html = '<div class="stack">';
+    if(state.liderCad){ html += '<button class="back-link" data-action="go-lider-home">← Voltar para a fila</button>'; }
+    html += '<p class="eyebrow">Líder</p><h1 style="margin-top:4px;">Cadastro do líder</h1>';
+    html += '<p class="muted" style="font-weight:600;">Faça uma vez. As OS da sua unidade chegam na sua fila e no seu e-mail.</p>';
+    html += '<div class="card stack">'+
+      '<div class="field"><label class="field-label" for="in-lcNome">Nome do líder</label>'+
+        '<input type="text" id="in-lcNome" value="'+escapeHtml(d.nome)+'" placeholder="Seu nome completo" autocomplete="off"></div>'+
+      '<div class="field"><label class="field-label">Unidade</label>'+unidadeSeg("set-lc-unidade", d.unidade)+'</div>'+
+      '<div class="field"><label class="field-label" for="in-lcEmail">E-mail corporativo</label>'+
+        '<input type="email" id="in-lcEmail" value="'+escapeHtml(d.email)+'" placeholder="nome'+EMAIL_DOMAIN+'" autocomplete="off" autocapitalize="off">'+
+        '<p class="muted" style="font-size:12.5px; margin-top:6px; font-weight:600;">Só aceita e-mail '+EMAIL_DOMAIN+'. É nele que você recebe cada nova OS da sua unidade.</p></div>'+
+    '</div>';
+    html += '<button class="btn btn-primary btn-block" data-action="lider-salvar-cadastro" style="padding:17px;">Salvar cadastro</button>';
+    html += '</div>';
+    return html;
+  }
+
   function renderLiderOsCard(o){
     var tmpl = CHECKLIST_TEMPLATES[o.frotaTipo] || {label:o.frotaTipo};
     var body = (
@@ -1551,7 +1671,7 @@ function openMailto(url){
         '<div class="os-code">'+escapeHtml(o.osCode)+'</div></div>'+
         '<span class="pill '+(STATUS_PILL_CLASS[o.status]||"pill-gray")+'">'+(STATUS_LABEL[o.status]||o.status)+'</span>'+
       '</div>'+
-      '<div class="os-meta"><span>👤 '+escapeHtml(o.mecanicoNome)+'</span><span>⚙️ '+(o.pecas?o.pecas.length:0)+' peça(s)</span><span>🕓 '+fmtDate(o.dataServico)+'</span></div>'
+      '<div class="os-meta">'+(o.unidade?'<span>📍 '+escapeHtml(o.unidade)+'</span>':'')+'<span>👤 '+escapeHtml(o.mecanicoNome)+'</span><span>⚙️ '+(o.pecas?o.pecas.length:0)+' peça(s)</span><span>🕓 '+fmtDate(o.dataServico)+'</span></div>'
     );
     var trashBtn = '<button type="button" class="os-trash-btn" data-action="delete-os" data-id="'+o.id+'" data-code="'+escapeHtml(o.osCode)+'" title="Excluir OS" aria-label="Excluir OS" style="position:absolute; top:10px; right:10px; width:30px; height:30px; border:none; background:transparent; color:var(--text-muted); font-size:16px; line-height:1; cursor:pointer; border-radius:8px; display:flex; align-items:center; justify-content:center; z-index:2;">\uD83D\uDDD1\uFE0F</button>';
     return '<div class="os-card" style="position:relative; padding-right:38px;">'+trashBtn+
@@ -1578,6 +1698,7 @@ function openMailto(url){
       '<span class="pill '+(STATUS_PILL_CLASS[os.status]||"pill-gray")+'">'+(STATUS_LABEL[os.status]||os.status)+'</span></div>';
     html += '<div class="card stack">'+
       '<div class="row-between"><span class="muted">Mecânico</span><span style="font-weight:600;">'+escapeHtml(os.mecanicoNome)+' · <span class="mono">'+escapeHtml(os.mecanicoMatricula)+'</span></span></div>'+
+      (os.unidade ? '<div class="row-between"><span class="muted">Unidade</span><span style="font-weight:600;">'+escapeHtml(os.unidade)+'</span></div>' : '')+
       (os.frente ? '<div class="row-between"><span class="muted">Frente</span><span style="font-weight:600;">'+escapeHtml(os.frente)+'</span></div>' : '')+
       (os.gestorDeixouParar===false ? '<div class="row-between"><span class="muted">Gestor não deixou parar</span><span style="font-weight:600;">'+escapeHtml(os.gestorNome||"—")+'</span></div>' : '')+
       '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(os.horimetro||"—")+'</span></div>'+
@@ -1634,7 +1755,7 @@ function openMailto(url){
   /* ---------------------- Consulta (histórico) ---------------------- */
   function viewConsulta(){
     var f = state.consultaFilters;
-    var all = osList().slice().sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
+    var all = (state.role==="lider" ? osVisiveisLider() : osList()).slice().sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
     var filtered = all.filter(function(o){
       var matchQ = !f.q || norm(o.mecanicoNome).indexOf(norm(f.q))>-1 || norm(o.frotaNumero).indexOf(norm(f.q))>-1 || norm(o.osCode).indexOf(norm(f.q))>-1;
       var matchTipo = f.tipo==="todos" || o.frotaTipo===f.tipo;
@@ -1675,6 +1796,7 @@ function openMailto(url){
 
     html += '<div class="card stack">'+
       '<div class="row-between"><span class="muted">Mecânico</span><span style="font-weight:600;">'+escapeHtml(os.mecanicoNome)+' · <span class="mono">'+escapeHtml(os.mecanicoMatricula)+'</span></span></div>'+
+      (os.unidade ? '<div class="row-between"><span class="muted">Unidade</span><span style="font-weight:600;">'+escapeHtml(os.unidade)+'</span></div>' : '')+
       '<div class="row-between"><span class="muted">Horímetro</span><span class="mono">'+escapeHtml(os.horimetro||"—")+'</span></div>'+
       '<div class="row-between"><span class="muted">Data do serviço</span><span style="font-weight:600;">'+fmtDate(os.dataServico)+'</span></div>'+
       '<div class="row-between"><span class="muted">Aberta em</span><span style="font-weight:600;">'+fmtDateTime(os.createdAt)+'</span></div>'+
@@ -1878,6 +2000,8 @@ function openMailto(url){
     bindInput("in-dataServico", function(v){ state.wizard.dataServico = v; });
     bindInput("in-obsGeral", function(v){ state.wizard.obsGeral = v; });
     bindInput("in-liderNome", function(v){ state.liderNome = v; });
+    bindInput("in-lcNome", function(v){ state.lcDraft = state.lcDraft || { nome: "", email: "", unidade: "" }; state.lcDraft.nome = v; });
+    bindInput("in-lcEmail", function(v){ state.lcDraft = state.lcDraft || { nome: "", email: "", unidade: "" }; state.lcDraft.email = v; });
 
     var tipoSel = document.getElementById("in-frotaTipo");
     if(tipoSel){
@@ -1933,6 +2057,14 @@ function openMailto(url){
     if(action==="nav-goto"){ state.route = t.getAttribute("data-route"); state.currentOsId=null; render(); return; }
     if(action==="go-mec-home"){ state.route="mec-home"; state.currentOsId=null; render(); return; }
     if(action==="go-lider-home"){ state.route="lider-home"; state.currentOsId=null; render(); return; }
+    if(action==="set-unidade"){ state.wizard.unidade = t.getAttribute("data-val"); render(); return; }
+    if(action==="set-lc-unidade"){
+      state.lcDraft = state.lcDraft || { nome: "", email: "", unidade: "" };
+      state.lcDraft.unidade = t.getAttribute("data-val"); render(); return;
+    }
+    if(action==="lider-salvar-cadastro"){ salvarCadastroLider(); return; }
+    if(action==="lider-editar-cadastro"){ state.lcDraft = null; state.route = "lider-cadastro"; render(); return; }
+    if(action==="lider-ver"){ state.verTodas = t.getAttribute("data-val")==="todas"; render(); return; }
 
     if(action==="new-apontamento"){ state.wizard = freshWizard(); state.route = "mec-wizard"; render(); return; }
     if(action==="wizard-back"){
@@ -2033,6 +2165,10 @@ function openMailto(url){
       state.error = "Preencha nome, matrícula e número da frota antes de enviar.";
       state.wizard.step = 1; render(); return;
     }
+    if(!w.unidade){
+      state.error = "Escolha a unidade.";
+      state.wizard.step = 1; render(); return;
+    }
     if(!w.frente || !w.gestorDeixou){
       state.error = "Informe a frente e se o gestor deixou a máquina parar.";
       state.wizard.step = 1; render(); return;
@@ -2041,6 +2177,7 @@ function openMailto(url){
       state.error = "Informe o nome do gestor que não deixou parar.";
       state.wizard.step = 1; render(); return;
     }
+    state.mecUnidade = w.unidade; lsSet("af_mecUnidade", w.unidade);
     var naoLiberou = w.gestorDeixou==="nao";
     var pecas = naoLiberou ? [] : w.pecas.filter(function(p){ return p.nome.trim(); }).map(function(p){
       return { id:p.id, nome:p.nome.trim(), qtd:p.qtd||"1", obs:p.obs||"", fotoAssetId:p.fotoAssetId||null, entregue:false, aplicada:false };
@@ -2050,7 +2187,7 @@ function openMailto(url){
       mecanicoNome: state.mecNome.trim(), mecanicoMatricula: state.mecMatricula.trim(),
       crachaAssetId: w.crachaAssetId || null, equipamentoAssetId: w.equipamentoAssetId || null,
       horimetro: w.horimetro || "", dataServico: w.dataServico,
-      frente: w.frente, gestorDeixouParar: !naoLiberou, gestorNome: naoLiberou ? w.gestorNome.trim() : "",
+      unidade: w.unidade, frente: w.frente, gestorDeixouParar: !naoLiberou, gestorNome: naoLiberou ? w.gestorNome.trim() : "",
       checklist: naoLiberou ? {} : w.checklist, obsGeral: w.obsGeral || "", pecas: pecas,
       status: pecas.length ? "pecas_pendentes" : "concluida",
       liderNome: null, liderSepararEm: null, assinaturaAssetId: null, assinaturaEm: null
