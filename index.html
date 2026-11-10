@@ -918,7 +918,7 @@ function openMailto(url){
     lideres: [],
     verTodas: false,
     supUnidade: lsGet("af_supUnidade", ""),
-    pendingCount: 0, pendingIds: {},
+    pendingCount: 0, pendingIds: {}, recvSel: {},
     mecUnidade: lsGet("af_mecUnidade", ""),
     liderTab: "fila",
     osAll: [],
@@ -1730,13 +1730,19 @@ function openMailto(url){
         '<h1>Confirmar recebimento</h1>'+
         '<div class="card stack">'+
           '<h3>Peças liberadas pelo líder'+(os.liderNome?(' · '+escapeHtml(os.liderNome)):'')+'</h3>'+
-          '<div class="stack">'+pecas.map(function(p){
-            return '<div class="row-between"><span style="font-weight:600;">'+escapeHtml(p.nome)+'</span><span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></div>';
+          '<p class="muted" style="font-size:13px; font-weight:600;">Marque só as peças que você realmente recebeu.</p>'+
+          '<div>'+pecas.map(function(p){
+            return (
+              '<label class="checkbox-row">'+
+                '<input type="checkbox" data-recv-id="'+p.id+'" '+(state.recvSel[p.id]===false?"":"checked")+'>'+
+                '<span class="checkbox-row-text">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></span>'+
+              '</label>'
+            );
           }).join("")+'</div>'+
         '</div>'+
         '<div class="card stack">'+
           '<h3>Assinatura do mecânico</h3>'+
-          '<p class="muted" style="font-size:13px; font-weight:600;">Assine abaixo confirmando que recebeu as peças acima.</p>'+
+          '<p class="muted" style="font-size:13px; font-weight:600;">Assine abaixo confirmando que recebeu as peças marcadas acima.</p>'+
           '<canvas class="sig-pad" id="sig-canvas"></canvas>'+
           '<button type="button" class="btn btn-secondary btn-sm" data-action="sig-clear" style="align-self:flex-start;">Limpar assinatura</button>'+
         '</div>'+
@@ -1748,7 +1754,7 @@ function openMailto(url){
     var os = findOs(state.currentOsId);
     if(!os) return '<div class="empty-state">OS não encontrada.</div>';
     var tmpl = CHECKLIST_TEMPLATES[os.frotaTipo] || {label:os.frotaTipo};
-    var pecas = (os.pecas||[]).filter(function(p){ return p.entregue; });
+    var pecas = (os.pecas||[]).filter(function(p){ return p.entregue && p.recebida!==false; });
     return (
       '<div class="stack">'+
         '<button class="back-link" data-action="go-mec-home">← Voltar</button>'+
@@ -1911,8 +1917,8 @@ function openMailto(url){
         '<input type="text" id="in-liderNome" value="'+escapeHtml(state.liderNome)+'" placeholder="Nome do líder"></div>';
     } else {
       (os.pecas||[]).forEach(function(p){
-        var pillClass = p.aplicada ? "pill-green" : (p.entregue ? "pill-blue" : "pill-gray");
-        var pillText = p.aplicada ? "Aplicada" : (p.entregue ? "Entregue" : "Não entregue");
+        var pillClass = p.aplicada ? "pill-green" : (p.entregue ? (p.recebida===false ? "pill-gray" : "pill-blue") : "pill-gray");
+        var pillText = p.aplicada ? "Aplicada" : (p.entregue ? (p.recebida===false ? "Não recebida" : "Entregue") : "Não entregue");
         html += '<div class="row-between" style="padding:7px 0; border-bottom:1px solid var(--border);">'+
           '<span style="font-weight:600;">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></span>'+
           '<span class="pill '+pillClass+'">'+pillText+'</span></div>';
@@ -2007,8 +2013,8 @@ function openMailto(url){
     if((os.pecas||[]).length){
       html += '<div class="card"><h3 style="margin-bottom:8px;">Peças</h3>';
       os.pecas.forEach(function(p){
-        var pillClass = p.aplicada ? "pill-green" : (p.entregue ? "pill-blue" : "pill-yellow");
-        var pillText = p.aplicada ? "Aplicada" : (p.entregue ? "Entregue" : "Solicitada");
+        var pillClass = p.aplicada ? "pill-green" : (p.entregue ? (p.recebida===false ? "pill-gray" : "pill-blue") : "pill-yellow");
+        var pillText = p.aplicada ? "Aplicada" : (p.entregue ? (p.recebida===false ? "Não recebida" : "Entregue") : "Solicitada");
         html += '<div class="row-between" style="padding:7px 0; border-bottom:1px solid var(--border);">'+
           '<span style="font-weight:600;">'+escapeHtml(p.nome)+' <span class="mono muted">x'+escapeHtml(p.qtd||"1")+'</span></span>'+
           '<span class="pill '+pillClass+'">'+pillText+'</span></div>';
@@ -2102,6 +2108,9 @@ function openMailto(url){
    * ------------------------------------------------------------- */
   function afterRender(){
     if(state.route==="mec-signature"){ initSignaturePad(); }
+    app.querySelectorAll("[data-recv-id]").forEach(function(cb){
+      cb.addEventListener("change", function(){ state.recvSel[cb.getAttribute("data-recv-id")] = cb.checked; });
+    });
 
     app.querySelectorAll("[data-photo-input]").forEach(function(input){
       input.addEventListener("change", function(e){
@@ -2289,7 +2298,7 @@ function openMailto(url){
       render(); return;
     }
 
-    if(action==="open-signature"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-signature"; state.sigStrokes = []; state.sigHasStroke = false; render(); return; }
+    if(action==="open-signature"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-signature"; state.recvSel = {}; state.sigStrokes = []; state.sigHasStroke = false; render(); return; }
     if(action==="open-apply"){ state.currentOsId = t.getAttribute("data-id"); state.route = "mec-apply"; render(); return; }
     if(action==="sig-clear"){ clearSignature(); return; }
     if(action==="sig-confirm"){ confirmSignature(); return; }
@@ -2409,11 +2418,15 @@ function openMailto(url){
   function confirmSignature(){
     var os = findOs(state.currentOsId);
     if(!os) return;
+    var recv = {};
+    app.querySelectorAll("[data-recv-id]").forEach(function(cb){ recv[cb.getAttribute("data-recv-id")] = cb.checked; });
+    if(!Object.keys(recv).some(function(k){ return recv[k]; })){ state.error = "Marque ao menos uma peça que você recebeu."; render(); return; }
     if(!state.sigHasStroke){ state.error = "Assine no campo indicado antes de confirmar."; render(); return; }
     state.busy = true; render();
+    var pecasRecv = (os.pecas||[]).map(function(p){ return p.entregue ? Object.assign({}, p, { recebida: recv[p.id] !== false }) : p; });
     blobFromCanvas(sigCanvas).then(function(blob){ return uploadImage(blob); })
       .then(function(assetId){
-        return updateOs(os.id, { assinaturaAssetId: assetId, assinaturaEm: new Date().toISOString(), status: "aguardando_aplicacao" });
+        return updateOs(os.id, { pecas: pecasRecv, assinaturaAssetId: assetId, assinaturaEm: new Date().toISOString(), status: "aguardando_aplicacao" });
       })
       .then(function(){ state.busy = false; state.route = "mec-home"; state.currentOsId = null; render(); })
       .catch(function(){ state.busy = false; state.error = "Não foi possível salvar a assinatura agora."; render(); });
@@ -2425,7 +2438,7 @@ function openMailto(url){
     var checks = app.querySelectorAll("[data-apply-id]");
     var selected = {};
     checks.forEach(function(c){ selected[c.getAttribute("data-apply-id")] = c.checked; });
-    var updated = (os.pecas||[]).map(function(p){ return p.entregue ? Object.assign({}, p, { aplicada: !!selected[p.id] }) : p; });
+    var updated = (os.pecas||[]).map(function(p){ return (p.entregue && p.recebida!==false) ? Object.assign({}, p, { aplicada: !!selected[p.id] }) : p; });
     state.busy = true; render();
     updateOs(os.id, { pecas: updated, status: "concluida", concluidaEm: new Date().toISOString() })
       .then(function(){ state.busy = false; state.route = "mec-home"; state.currentOsId = null; render(); })
