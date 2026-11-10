@@ -802,7 +802,7 @@ return p.nome + " (x" + (p.qtd||"1") + ")" + (p.obs?(" — "+p.obs):"");
 }).join("; ");
 }
 function notifyPowerAutomate(os){
-if(!POWER_AUTOMATE_URL) return;
+if(!POWER_AUTOMATE_URL) return Promise.resolve(true);
 try{
 var photoJobs = [];
 if(os.crachaAssetId){ photoJobs.push({ nome: "cracha_" + os.osCode + ".jpg", url: assetUrl(os.crachaAssetId) }); }
@@ -816,7 +816,7 @@ if(c && c.status==="problema" && c.fotoAssetId){
 photoJobs.push({ nome: "problema_" + k + "_" + os.osCode + ".jpg", url: assetUrl(c.fotoAssetId) });
 }
 });
-Promise.all(photoJobs.map(function(job){
+return Promise.all(photoJobs.map(function(job){
 return blobUrlToBase64(job.url).then(function(b64){
 return b64 ? { nomeArquivo: job.nome, conteudoBase64: b64 } : null;
 }).catch(function(){ return null; });
@@ -852,11 +852,14 @@ method: "POST",
 headers: { "Content-Type": "application/json" },
 body: JSON.stringify(payload)
 });
-}).catch(function(e){
+}).then(function(){ return true; }).catch(function(e){
 console.warn("Falha ao notificar Power Automate (nao bloqueia o app):", e);
+/* sem sinal: tenta de novo depois; com sinal, segue como antes (so registra o aviso) */
+return navigator.onLine !== false;
 });
 }catch(e){
 console.warn("Falha ao preparar notificacao Power Automate:", e);
+return Promise.resolve(true);
 }
 }
 
@@ -915,6 +918,7 @@ function openMailto(url){
     lideres: [],
     verTodas: false,
     supUnidade: lsGet("af_supUnidade", ""),
+    pendingCount: 0, pendingIds: {},
     mecUnidade: lsGet("af_mecUnidade", ""),
     liderTab: "fila",
     osAll: [],
@@ -1064,6 +1068,7 @@ function openMailto(url){
   }
   function updateOs(id, patch){
     patch.updatedAt = new Date().toISOString();
+    if(db && navigator.onLine === false){ return Promise.reject(new Error("offline")); }
     if(db){ return db.doc("os/"+id).update(patch); }
     var o = findOs(id);
     if(o) Object.assign(o, patch);
@@ -1074,10 +1079,163 @@ function openMailto(url){
     state.localOS = state.localOS.filter(function(o){ return o.id!==id; });
     return Promise.resolve();
   }
+  function compressToDataUrl(blob){
+    return new Promise(function(resolve){
+      var url = null;
+      function plain(){ if(url) URL.revokeObjectURL(url); blobToDataUrl(blob).then(resolve); }
+      try{
+        url = URL.createObjectURL(blob);
+        var img = new Image();
+        img.onload = function(){
+          try{
+            var max = 1280, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max/Math.max(w,h));
+            var c = document.createElement("canvas");
+            c.width = Math.round(w*k); c.height = Math.round(h*k);
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(url);
+            resolve(c.toDataURL("image/jpeg", 0.72));
+          }catch(e){ plain(); }
+        };
+        img.onerror = plain;
+        img.src = url;
+      }catch(e){ plain(); }
+    });
+  }
   function uploadImage(blob){
     if(!blob) return Promise.resolve(null);
-    if(!assetsApi) return blobToDataUrl(blob);
-    return assetsApi.upload(blob).then(function(r){ return r.id; }).catch(function(){ return blobToDataUrl(blob); });
+    var isPng = !!(blob.type && blob.type.indexOf("png")>-1);
+    var local = function(){ return isPng ? blobToDataUrl(blob) : compressToDataUrl(blob); };
+    if(!assetsApi || navigator.onLine === false) return local();
+    return assetsApi.upload(blob).then(function(r){ return r.id; }).catch(local);
+  }
+
+  /* ---------------------------------------------------------------
+   * Caixa de saída (offline): o apontamento é salvo no celular e
+   * enviado sozinho quando houver sinal.
+   * ------------------------------------------------------------- */
+  var OB_DB = "af_outbox", OB_STORE = "items", obMem = [], obSyncing = false;
+  function obOpen(){
+    return new Promise(function(res, rej){
+      try{
+        var r = indexedDB.open(OB_DB, 1);
+        r.onupgradeneeded = function(){ r.result.createObjectStore(OB_STORE, { keyPath:"id" }); };
+        r.onsuccess = function(){ res(r.result); };
+        r.onerror = function(){ rej(r.error); };
+      }catch(e){ rej(e); }
+    });
+  }
+  function obPut(item){
+    return obOpen().then(function(d){
+      return new Promise(function(res, rej){
+        var tx = d.transaction(OB_STORE, "readwrite");
+        tx.objectStore(OB_STORE).put(item);
+        tx.oncomplete = function(){ res(); };
+        tx.onerror = tx.onabort = function(){ rej(tx.error); };
+      });
+    }).catch(function(){
+      var i = obMem.findIndex(function(x){ return x.id===item.id; });
+      if(i>=0) obMem[i] = item; else obMem.push(item);
+    });
+  }
+  function obAll(){
+    return obOpen().then(function(d){
+      return new Promise(function(res, rej){
+        var rq = d.transaction(OB_STORE, "readonly").objectStore(OB_STORE).getAll();
+        rq.onsuccess = function(){ res(rq.result || []); };
+        rq.onerror = function(){ rej(rq.error); };
+      });
+    }).catch(function(){ return []; }).then(function(a){
+      return a.concat(obMem.filter(function(m){ return !a.some(function(x){ return x.id===m.id; }); }));
+    });
+  }
+  function obDel(id){
+    obMem = obMem.filter(function(x){ return x.id!==id; });
+    return obOpen().then(function(d){
+      return new Promise(function(res, rej){
+        var tx = d.transaction(OB_STORE, "readwrite");
+        tx.objectStore(OB_STORE).delete(id);
+        tx.oncomplete = function(){ res(); };
+        tx.onerror = tx.onabort = function(){ rej(tx.error); };
+      });
+    }).catch(function(){});
+  }
+  function refreshPending(){
+    return obAll().then(function(a){
+      state.pendingCount = a.length;
+      state.pendingIds = {};
+      a.forEach(function(x){ state.pendingIds[x.id] = true; });
+    });
+  }
+  function enqueueOs(data){
+    data.id = "os_" + uid();
+    data.createdAt = new Date().toISOString();
+    data.updatedAt = data.createdAt;
+    return obPut({ id:data.id, data:data, saved:false, notified:false, tries:0, queuedAt:data.createdAt }).then(refreshPending);
+  }
+  function withTimeout(p, ms){
+    return new Promise(function(res, rej){
+      var t = setTimeout(function(){ rej(new Error("timeout")); }, ms);
+      p.then(function(v){ clearTimeout(t); res(v); }, function(e){ clearTimeout(t); rej(e); });
+    });
+  }
+  function uploadLocalPhotos(data){
+    var jobs = [];
+    function add(v, set){
+      if(v && String(v).indexOf("data:")===0){
+        jobs.push(fetch(v).then(function(r){ return r.blob(); })
+          .then(function(b){ return assetsApi.upload(b); })
+          .then(function(r){ set(r.id); }));
+      }
+    }
+    add(data.crachaAssetId, function(v){ data.crachaAssetId = v; });
+    add(data.equipamentoAssetId, function(v){ data.equipamentoAssetId = v; });
+    (data.pecas||[]).forEach(function(p){ add(p.fotoAssetId, function(v){ p.fotoAssetId = v; }); });
+    Object.keys(data.checklist||{}).forEach(function(k){
+      var c = data.checklist[k];
+      if(c) add(c.fotoAssetId, function(v){ c.fotoAssetId = v; });
+    });
+    return Promise.all(jobs);
+  }
+  function syncItem(it){
+    var step = it.saved ? Promise.resolve() :
+      uploadLocalPhotos(it.data)
+        .then(function(){ return withTimeout(db.collection("os").doc(it.id).set(it.data), 30000); })
+        .then(function(){ it.saved = true; return obPut(it); });
+    return step.then(function(){
+      if(it.notified) return;
+      return notifyPowerAutomate(it.data).then(function(sent){
+        if(sent){ it.notified = true; return obPut(it); }
+      });
+    }).then(function(){
+      if(it.saved && it.notified) return obDel(it.id);
+    }).catch(function(){
+      it.tries = (it.tries||0) + 1;
+      return obPut(it);
+    });
+  }
+  function syncOutbox(){
+    if(obSyncing || !db || !assetsApi || navigator.onLine === false) return Promise.resolve();
+    obSyncing = true;
+    return obAll().then(function(items){
+      items.sort(function(a,b){ return String(a.queuedAt).localeCompare(String(b.queuedAt)); });
+      return items.reduce(function(chain, it){ return chain.then(function(){ return syncItem(it); }); }, Promise.resolve());
+    }).catch(function(){}).then(function(){
+      obSyncing = false;
+      return refreshPending();
+    }).then(function(){
+      if(state.route!=="mec-wizard" && state.route!=="mec-signature"){ render(); }
+    });
+  }
+  function renderOutboxBanner(){
+    var n = state.pendingCount || 0, off = (navigator.onLine === false);
+    if(!n && !off) return "";
+    if(n){
+      return '<div class="banner banner-warn" style="display:flex; flex-direction:column; gap:10px;">'+
+        '<div><strong>📤 '+n+' apontamento'+(n>1?'s':'')+' aguardando envio</strong><br>'+
+        '<span style="font-size:13px;">'+(off?'Sem sinal agora. ':'')+'Está salvo no celular e será enviado sozinho quando tiver sinal. Pode continuar usando o app.</span></div>'+
+        '<button class="btn btn-secondary" data-action="sync-now">Enviar agora</button></div>';
+    }
+    return '<div class="banner banner-warn"><strong>📴 Sem sinal.</strong> Você pode registrar apontamentos normalmente: eles ficam salvos no celular e são enviados quando o sinal voltar.</div>';
   }
 
   /* ---------------------------------------------------------------
@@ -1285,6 +1443,7 @@ function openMailto(url){
       '<div><p class="eyebrow">Bem-vindo</p><h1 style="margin-top:4px;">'+escapeHtml(state.mecNome||"Mecânico")+' 👋</h1>'+
       '<p class="mono muted" style="margin-top:2px; font-weight:600;">Matrícula '+escapeHtml(state.mecMatricula||"—")+'</p></div>'+
       '</div>';
+    html += renderOutboxBanner();
     html += '<button class="btn btn-primary btn-block" data-action="new-apontamento" style="padding:17px;">➕ Novo apontamento</button>';
 
     html += '<div class="kpi-row">'+
@@ -1543,7 +1702,8 @@ function openMailto(url){
       '<div class="stack">'+
         '<div class="card stack" style="text-align:center; padding:26px 16px;">'+
           '<div style="font-size:40px;">✅</div>'+
-          '<h1>Apontamento enviado!</h1>'+
+          '<h1>'+(state.pendingIds && state.pendingIds[os.id] ? 'Salvo no celular!' : 'Apontamento enviado!')+'</h1>'+
+          (state.pendingIds && state.pendingIds[os.id] ? '<p class="muted" style="font-weight:600;">Será enviado automaticamente quando tiver sinal.</p>' : '')+
           '<p class="mono muted">'+escapeHtml(os.osCode)+'</p>'+
           '<p class="muted" style="font-weight:600;">'+tmpl.label+' '+escapeHtml(os.frotaNumero)+' · '+escapeHtml(os.mecanicoNome)+'</p>'+
         '</div>'+
@@ -2079,6 +2239,10 @@ function openMailto(url){
     }
     if(action==="lider-salvar-cadastro"){ salvarCadastroLider(); return; }
     if(action==="lider-editar-cadastro"){ state.lcDraft = null; state.route = "lider-cadastro"; render(); return; }
+    if(action==="sync-now"){
+      if(navigator.onLine === false){ state.error = "Ainda sem sinal. O envio é tentado de novo automaticamente."; render(); return; }
+      syncOutbox(); return;
+    }
     if(action==="sup-unidade"){ state.supUnidade = t.getAttribute("data-val") || ""; lsSet("af_supUnidade", state.supUnidade); render(); return; }
     if(action==="lider-ver"){ state.verTodas = t.getAttribute("data-val")==="todas"; render(); return; }
 
@@ -2209,12 +2373,14 @@ function openMailto(url){
       liderNome: null, liderSepararEm: null, assinaturaAssetId: null, assinaturaEm: null
     };
     state.busy = true; render();
-    createOs(data).then(function(){
-notifyPowerAutomate(data);
+    var useQueue = !(window.claude && window.claude.use);
+    var saving = useQueue ? enqueueOs(data) : createOs(data).then(function(){ notifyPowerAutomate(data); });
+    saving.then(function(){
       state.busy = false; state.wizard = null;
       state.lastSubmittedOs = data;
       state.route = "mec-submitted";
       render();
+      if(useQueue){ syncOutbox(); }
     }).catch(function(){
       state.busy = false; state.error = "Não foi possível enviar o apontamento agora. Tente novamente.";
       render();
@@ -2276,7 +2442,9 @@ notifyPowerAutomate(data);
       auth.onAuthStateChanged(function(user){
         if(user && !db){
           db = firebase.firestore();
+          try{ db.enablePersistence({ synchronizeTabs:true }).catch(function(){}); }catch(e){}
           var storage = firebase.storage();
+          try{ storage.setMaxUploadRetryTime(20000); storage.setMaxOperationRetryTime(20000); }catch(e){}
           assetsApi = {
             upload: function(blob){
               var ext = (blob && blob.type && blob.type.indexOf("png")>-1) ? "png" : "jpg";
@@ -2288,6 +2456,7 @@ notifyPowerAutomate(data);
             }
           };
           subscribe();
+          syncOutbox();
         }
       });
       auth.signInAnonymously().catch(function(err){
@@ -2302,6 +2471,15 @@ notifyPowerAutomate(data);
 
   function boot(){
     applyTheme("light");
+    refreshPending().then(function(){ if(state.route==="mec-home"){ render(); } });
+    window.addEventListener("online", function(){
+      if(!db && typeof firebase === "undefined" && !(window.claude && window.claude.use)){ location.reload(); return; }
+      syncOutbox();
+      if(state.route==="mec-home"){ render(); }
+    });
+    window.addEventListener("offline", function(){ if(state.route==="mec-home"){ render(); } });
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden){ syncOutbox(); } });
+    setInterval(function(){ syncOutbox(); }, 30000);
     if(state.role){ state.route = (state.role==="lider"||state.role==="supervisor") ? "lider-home" : "mec-home"; }
     render();
 
